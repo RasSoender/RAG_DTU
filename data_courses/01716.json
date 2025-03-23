@@ -1,0 +1,23 @@
+{
+    "course title": "01716 Advanced Topics in Applied Functional Analysis",
+    "Danish title": "Videregående emner i anvendt funktionalanalyse",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course",
+    "Schedule": "Spring F3A (Tues 8-12)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, practical exercises, and oral presentations by the students",
+    "Duration of Course": "13 weeks",
+    "Type of assessment": "Oral examination and exercises\nAn overall assessment of students' performance throughout the course is made based on embedded, oral presentations and written homework problems.",
+    "Aid": "All Aids - with access to the internet",
+    "Evaluation": "pass / not pass , internal examiner",
+    "Academic prerequisites": "01715.01418 , Basic knowledge of partial differential equations and functional analysis",
+    "Participants restrictions": "Minimum 10",
+    "Responsible": "Kim Knudsen , Lyngby Campus, Building 303B, Ph. (+45) 4525 3026 , kiknu@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThe primary goal is to utilize and apply fundamental notions, abstractions, and principles of functional analysis towards solving concrete mathematical problems arising in engineering and natural sciences. In addition we aim at strengthening students' analytical, logical reasoning, and problem solving abilities.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nIdentify functional analytic abstractions in statements of concrete model problems\nInterpret model problems in functional analytic terms and formally verify prerequisites for such interpretations\nUtilize and apply fundamental functional analytic principles towards analyzing and solving model problems\nInterpret certain computational algorithms in functional analytic terms\nFollow and apply logical strategies of formal mathematical arguments\nEstablish the validity mathematical statements about models by constructing and providing formal arguments\nKnow and master the relevant mathematical language and be able to communicate abstract and precise mathematical statements and reasoning orally and in writing.\nKnow and master advanced topics in functional analysis such as the spectral theorem for compact operators, compact embeddings and the Lax-Milgram Theorem.",
+    "Content": "The course concerns functional analytic methods for integral and/or partial differential equations. Some specific keywords include: compact sets and operators, Sobolev spaces, elliptic boundary value problems, fixed point theorems, Galerkin method and FEM, and optimization in Hilbert and Banach spaces.",
+    "Last updated": "02. maj, 2024"
+}

@@ -1,0 +1,23 @@
+{
+    "course title": "10387 Scientific computing in quantum information science",
+    "Danish title": "Scientific computing i kvanteinformationsvidenskab",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nProgramme specific course (MSc), Engineering Physics",
+    "Schedule": "August",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, code demonstrations, hands-on tutorials, project work, student presentations",
+    "Duration of Course": "3 weeks",
+    "Date of examination": "The last day",
+    "Type of assessment": "Evaluation of exercises/reports\nThe last half of the course will mostly consist of individualized project work (individual or in pairs). The project will conclude with a presentation in class and submission of a Github repository, which will form the basis for the assessment.",
+    "Evaluation": "pass / not pass , internal examiner",
+    "Academic prerequisites": "10112/10380/10384/10385/34042 , Highly recommended to have prior course(s) relating to quantum information science/quantum technology plus some experience with programming in Python.",
+    "Responsible": "Jonas Schou Neergaard-Nielsen , Lyngby Campus, Building 307 , jsne@fysik.dtu.dk",
+    "Department": "10 Department of Physics",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nSimulation, numerical computation, experiment control, data analysis, visualisation: These are all essential components of modern science and engineering, and they all rely on code. Any scientist or R&D engineer should have a basic understanding of the methods of scientific computing. This course aims to strengthen your computational thinking and introduce you to a range of computational tools and methods relevant in science.\n\nYou will get acquainted with libraries and tools (all Python) that are generally useful in engineering and science, as well as more specific libraries often used in quantum optics and quantum information. The course is therefore particularly relevant for those considering an academic or industrial career in quantum information science and technology and for those doing a master or PhD project in the field.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nUnderstand the relationship between the most common libraries of the Python scientific computing ecosystem\nUse basic version control with git and manage a small open source software project on Github\nDevelop reusable, efficient, and well-documented code for solving or analysing a physical problem\nPerform different types of convex optimisation\nAnalyse and simulate quantum optical circuits\nModel and simulate the dynamics of open quantum systems\nQuantitatively analyse noisy measurement data\nExamine code execution time and know about methods for speeding it up\nClearly and concisely present a computational problem, the chosen solution method, and its results",
+    "Content": "Package management and virtual environments.\nVersion control with git.\nCore scientific computing packages for Python: Numpy, Scipy, Matplotlib.\nExplorative code development: interactive prompt - Jupyter notebooks - scripts - packages; IDEs.\nBenchmarking and optimisation of code: timing, line profiling, arrays vs. loops, caching, numexpr, Numba.\nEfficient use of arrays.\nPresenting code with notebooks and reveal.js.\n\nSelected numerical methods, e.g. spectral analysis, linear programming (convex optimisation), master equations.\nSelected topics in quantum information and quantum optics, e.g. continuous-variable quantum optics, decoherence of qubits, quantum randomness, quantum circuits.\nSelected packages for simulation of quantum systems, e.g. QuTiP, Strawberryfields, Qiskit.\n\nIf time allows:\nInstrument interfaces, data acquisition, GUIs.\nInteractive visualisation with e.g. Bokeh, Plotly, ipywidgets.",
+    "Remarks": "Using AI for speeding up programming, etc., will be encouraged throughout the course. You must, however, understand what your code does.",
+    "Last updated": "02. maj, 2024"
+}

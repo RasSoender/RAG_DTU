@@ -1,0 +1,23 @@
+{
+    "course title": "34371 Communication Network Security",
+    "Danish title": "Communication Network Security",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nProgramme specific course (MSc), Communication Technologies and System Design\nTechnological specialization course (MSc), Communication Technologies and System Design\nElective course (B Eng), IT and Economics\nElective course (B Eng), Computer Engineering",
+    "Schedule": "Autumn E5B (Wed 13-17)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures and exercises",
+    "Duration of Course": "13 weeks",
+    "Date of examination": "E5B",
+    "Type of assessment": "Oral examination and reports",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "34315/34330/34313/34346/34333",
+    "Participants restrictions": "Maximum: 20",
+    "Responsible": "Lars Dittmann , Lyngby Campus, Building 343, Ph. (+45) 4525 3851 , ladit@dtu.dk",
+    "Department": "34 Department of Electrical and Photonics Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThe course addresses network security challenges at different levels of the OSI layer model. The course introduces afterward specific aspects related to IoT technologies with a focus on practical cases and setups. Students will learn to operate traffic capturing and generating tools, analyze network security vulnerabilities of different protocols and build up and analyze concrete IoT-related setups, with the aim to increase awareness and understanding of IoT data communication security and its incorporation in future designs.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nDescribe the purpose and elements of the OSI-layered networking model.\nOperate network traffic analyses tools (Wireshark) and generate traffic from a programmatic environment (Scapy).\nAnalyze and explain typical network security vulnerabilities and attacks to protocols at L2, L3 and L4 of the OSI model.\nInvestigate and explain security properties of typical application-layer protocols for IoT.\nExperiment and analyse security aspects of conventional wireless technologies for IoT devices (WiFi and Bluetooth).\nUnderstand applicability of cellular and non-cellular radio technologies for IoT networks (NBIoT, LoRa).\nInvestigate practical network-security use cases, and design alternative target solutions.\nPublically describe a network security problem and likely solutions for it.",
+    "Content": "The course contents cover fundamental aspects of network security at different layers: physical, mac, network, and transport layers, with emphasis on IoT-specific challenges. After an initial introduction to network communication architectural models and basic mechanisms, the course focus on typical vulnerabilities and challenges of communication network systems at MAC, network, and transport layers. All these, are based on practical hands-on labs (There will be experiments and hands-on exercises in all lectures). Afterward, the course turns focus to specific IoT components and technologies to provide a baseline understanding of the systems and devices to protect. Furthermore. the course will present elements related to privacy regulations and standards that apply to securing IoT systems.\nThe course will include a project work requiring students to design, build, and evaluate a practical IoT system. Students will be required to demonstrate their prototypes and present orally their projects at the end of the course, documenting their designs and results in a report. It is expected that guest-speakers present related topics.",
+    "Last updated": "02. maj, 2024"
+}

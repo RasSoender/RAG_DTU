@@ -1,0 +1,23 @@
+{
+    "course title": "02263 Formal Aspects of Software Engineering",
+    "Danish title": "Formelle aspekter af software engineering",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Computer Science and Engineering\nTechnological specialization course (MSc), Computer Science and Engineering",
+    "Schedule": "Autumn E1A (Mon 8-12)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, exercises and project work.",
+    "Duration of Course": "13 weeks",
+    "Date of examination": "No exam. Not offered for re-examination.",
+    "Type of assessment": "Evaluation of exercises/reports\nEvaluation of individualised group reports. There will be a mandatory exercise and a mandatory project. An approved exercise is mandatory for participation in the project. The final mark is based on the project report.",
+    "Aid": "All Aids - with access to the internet",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "(01017/01019/01904) . (02100/02101) . 02157 . (02141/02156/02158) , i.e. (1) mastering discrete mathematics: sets, functions, logical expressions in predicate logic, (2) mastering imperative programming (e.g. in Java) and functional programming (e.g. in F#), and (4) knowledge about software modelling.",
+    "Responsible": "Anne Elisabeth Haxthausen , Lyngby Campus, Building 321, Ph. (+45) 4525 7510 , aeha@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThe aim of the course is to give the participants skills in mathematically based methods for developing reliable software systems.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nestablish a formal specification from an informal problem description\nuse distinguished specification styles and techniques to achieve models at an appropriation level of abstract\nstepwise refine a specification\nestablish verification obligations (e.g. refinement conditions and required system properties)\nverify simple verification obligations\ntranslate a specification into an executable program\napply selected tools relating to formal methods\nexplain what can be achieved by using formal methods\ncommunicate results in a clear and precise manner\nsolve problems as a group while keeping individual responsibility",
+    "Content": "Formal specification using one or more typical examples of specification languages. Various specification techniques and styles for constructing models at different levels of abstraction. Stepwise development and verification by means of a series of models of decreasing level of abstraction. Implementation relation(s). Application of computer based specification tools.",
+    "Last updated": "02. maj, 2024"
+}

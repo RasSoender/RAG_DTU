@@ -1,0 +1,23 @@
+{
+    "course title": "01622 Advanced Dynamical Systems: Applications in Science and Engineering",
+    "Danish title": "Videregående dynamiske systemer med teknologiske anvendelser",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nProgramme specific course (MSc), Mathematical Modelling and Computation\nTechnological specialization course (MSc), Mathematical Modelling and Computation",
+    "Schedule": "Spring F3B (Fri 13-17)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures and group work",
+    "Duration of Course": "13 weeks",
+    "Type of assessment": "Evaluation of experiments and reports\nAssessment is based on homework and individualised group reports.",
+    "Evaluation": "7 step scale , internal examiner",
+    "Previous Course": "01618",
+    "Academic prerequisites": "01617 , Introduction to Dynamical Systems",
+    "Responsible": "Mads Peter Sørensen , Lyngby Campus, Building 303B, Ph. (+45) 4525 3050 , mpso@dtu.dk",
+    "Course co-responsible": "Pernille Yde Nielsen , pydni@dtu.dk\nUffe Høgsbro Thygesen , Lyngby Campus, Building 303B, Ph. (+45) 4525 3060 , uhth@dtu.dk\nAdam Mielke , admi@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThis course covers both theory and practical techniques to analyze nonlinear oscillators, networks of complex systems, problems in space and time with applications in science and engineering . Whereas the focus in the introductory level dynamical systems course (01617) lies on the mathematical theory of local dynamics, we focus in this course on mastering the mathematical analysis applied to practical problems occurring in mathematics, physics, engineering, and life sciences. Students will learn to master the analysis, both mathematical and numerical, of dynamical systems exhibiting both simpel and complex behavior.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nDerive and analyse nonlinear models for physical and biological problems.\nApply basic bifurcation theory.\nUse regular perturbation analysis and multi scale analysis\nFormulate relevant optimisation models as variational problems, and analyse the associated Euler-Lagrange equations.\nDetermine solitary and soliton wave solutions to spatial problems (nonlinear partial differential equations), and examine pattern formation in such systems.\nApply separation of time scales in simplification of dynamical models and determine the underlying assumptions and limitations.\nApply modelling to biological systems, in particular to functional feedback systems and reaction-diffusion models.\nApply modelling to population dynamics, in particular to spread of diseases (SIR models).",
+    "Content": "Theory of nonlinear oscillations, perturbation methods, averaging theory, multi-scale methods, Hamiltonian and Lagrangian theory, dynamics on and of networks, and spatio-temporal dynamics. Applications of bifurcation theory.",
+    "Last updated": "02. maj, 2024"
+}

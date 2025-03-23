@@ -1,0 +1,22 @@
+{
+    "course title": "02201 Agile Hardware Design",
+    "Danish title": "Agil hardwareudvikling",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc",
+    "Schedule": "Autumn E4A (Tues 13-17)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, group work, and home work. Mandatory laboratory exercises.",
+    "Duration of Course": "13 weeks",
+    "Type of assessment": "Evaluation of exercises/reports",
+    "Aid": "All Aid - no access to the internet",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "02139/02132/02135",
+    "Responsible": "Martin Schoeberl , Ph. (+45) 4525 3743 , masca@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nAgile hardware design with Chisel (Constructing Hardware in a Scala Embedded Language) is a specialized course that focuses on using the Chisel hardware description language (HDL) as part of the agile hardware design process. Chisel is a modern hardware description language that enables designers to create digital circuits with concise, high-level code that is easier to write and maintain than traditional HDLs.\nThe course covers the following topics:\n1. Introduction to Agile Hardware Design with Chisel: an overview of agile design in general and hardware design and the Chisel HDL, including its syntax, features, and benefits.\n2. Agile Hardware Design Process with Chisel: agile hardware design process using Chisel, including requirements gathering, design, prototyping, testing, and deployment.\n3. Chisel Design Patterns: design patterns and idioms used in Chisel, such as generators, parameterization, and functional abstraction.\n4. Verification of Designs: Verification with Chisel Test, test-driven development, continuous integration, formal verification.\n5. Agile Hardware Design Case Studies: a project of a real-world hardware design project that uses Chisel and agile methodologies, providing students with practical examples of how to apply these concepts in their work.\nOverall, the course will provide the students with a comprehensive understanding of agile hardware design with Chisel, enabling them to design and implement complex digital circuits with greater speed, flexibility, and efficiency.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nUnderstanding the principles of agile design and how they apply to hardware development using Chisel.\nFamiliarity with the Chisel HDL, including its syntax, features, and benefits.\nKnowledge of the agile hardware design process, including requirements gathering, design, prototyping, testing, and deployment.\nMastery of Chisel design patterns and idioms, such as generators, parameterization, and functional abstraction.\nProficiency in using Chisel libraries and tools, such as the Rocket Chip generator, the Chisel test harness, and the Verilog emitter.\nAbility to design and implement complex digital circuits using Chisel and agile methodologies.\nExposure to real-world case studies of agile hardware design with Chisel, providing practical examples of how to apply these concepts in professional contexts.\nWrite a technical report that documents the project work.",
+    "Content": "Circuit generator, object-oriented and functional hardware design, test-driven development, system-on-chip and interconnect, verification of digital systems",
+    "Last updated": "02. maj, 2024"
+}

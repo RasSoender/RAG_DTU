@@ -1,0 +1,23 @@
+{
+    "course title": "02285 Kunstig intelligens og multiagent-systemer",
+    "Engelsk titel": "Artificial Intelligence and Multi-Agent Systems",
+    "Undervisningssprog": "Engelsk",
+    "Point( ECTS )": "7,5",
+    "Kursustype": "Kandidat\nKurset udbydes som enkeltfag\nGenerel retningskompetence (MSc), Computer Science and Engineering\nRetningsspecifikt kursus (MSc), Autonomous Systems\nRetningsspecifikt kursus (MSc), Computer Science and Engineering\nRetningsspecifikt kursus (MSc), Human-Centered Artificial Intelligence\nTeknologisk specialisering (MSc), Autonomous Systems\nTeknologisk specialisering (MSc), Computer Science and Engineering\nTeknologisk specialisering (MSc), Human-Centered Artificial Intelligence",
+    "Skemaplacering": "F4A (tirs 13-17)",
+    "Undervisningens placering": "Campus Lyngby",
+    "Undervisningsform": "Forelæsninger, øvelser, afleveringsopgaver og et større programmeringsprojekt.",
+    "Kursets varighed": "13-uger",
+    "Eksamensplacering": "F4A",
+    "Evalueringsform": "Bedømmelse af opgave(r)/rapport(er)\nBedømmelsen baseres på de 2 afleveringsopgaver undervejs i kurset og det afsluttende større programmeringsprojekt. Det afsluttende programmeringsprojekt er et gruppeprojekt og de 2 øvrige afleveringsopgaver vil enten være individuelle eller gruppearbejde. Alle gruppeafleveringer skal individualiseres (ved at angive præcist hvem der har gjort hvad). Bedømmelsen gives som en helhedsvurdering.",
+    "Bedømmelsesform": "7-trins skala , intern bedømmelse",
+    "Faglige forudsætninger": "01017. 02101. 02105. 02180. , eller ækvivalente kurser, herunder kendskab til grafsøgningsalgoritmer, søgeheuristikker og lidt prædikatlogik. Desuden kræves erfaring med implementering af ikke-trivielle algoritmer og større softwaresystemer.",
+    "Kursusansvarlig": "Thomas Bolander , Lyngby Campus, Bygning 322, Tlf. (+45) 4525 3715 , tobo@dtu.dk",
+    "Institut": "01 Institut for Matematik og Computer Science",
+    "Tilmelding": "I studieplanlæggeren",
+    "Mulighed for GRØN DYST deltagelse": "Kontakt underviseren for information om hvorvidt dette kursus giver den studerende mulighed for at lave eller forberede et projekt som kan deltage i DTUs studenterkonference om bæredygtighed, klimateknologi og miljø (GRØN DYST). Se mere på http://www.groendyst.dtu.dk",
+    "Overordnede kursusmål": "Overordnede kursusmål\nDette kursus introducerer de studerende til avancerede teknikker inden for kunstig intelligens (AI) med særligt fokus på automatiseret planlægning og multiagent-systemer. Kursets mål er at blive i stand til at forklare, analysere og implementere avancerede AI-teknikker.",
+    "Læringsmål": "En studerende, der fuldt ud har opfyldt kursets mål, vil kunne:\nbeskrive et antal af de mest udbredte teknikker i kunstig intelligens og multiagent-systemer - både i overordnede termer og på et detaljeret teknisk niveau\nsammenligne og vurdere anvendeligheden af forskelige AI-teknikker indenfor automatiseret planlægning og multiagent-systemer til løsning af et givet konkret problem\nkombinere forskellige AI-teknikker på en teoretisk sund og praktisk anvendelig måde\nanvende en given AI-teknik til løsning af et givet konkret problem\ngøre rede for de generelle komplikationer og fælder involveret i praktisk brug af AI-teknikker\nselvstændigt udforske den relevante litteratur i forhold til et konkret AI-projekt indenfor automatiseret planlægning og multiagent-systemer\nimplementere ikke-trivielle AI-teknikker i et relativt stort softwaresystem\nformidle resultater indenfor kursets emneområde i stil med et videnskabeligt konferencebidrag",
+    "Kursusindhold": "Kurset fokuserer primært på emner indenfor automatiseret planlægning og multiagent-systemer, men vil også berøre andre emner indenfor AI (f.eks. problemløsning ved søgning, vidensrepræsentation og ræssonering med logiske agenter).\n\nProgrammeringsprojektet omhandler design og implementation af avancerede AI-teknikker i et simuleret multiagent-miljø. Programmeringsprojektet er meget åbent og lægger op til udvikling af egne algoritmer og multiagent-arkitekturer. Projektet udføres i grupper og skal resultere i et fungerende softwaresystem og en videofremlæggelse, som præsenterer systemet og dets underliggende ideer i stil med forskningspræsentationer på AI-konferencer.\n\nUdover programmeringsprojektet vil der være 2 mindre afleveringsopgaver i løbet af kurset.",
+    "Sidst opdateret": "02. maj, 2024"
+}

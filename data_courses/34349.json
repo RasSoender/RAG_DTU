@@ -1,0 +1,23 @@
+{
+    "course title": "34349 FPGA design for communication systems",
+    "Danish title": "FPGA design til kommunikationssystemer",
+    "Language of instruction": "English",
+    "Point( ECTS )": "10",
+    "Course type": "MSc\nOffered as a single course\nGeneral competence course (MSc), Communication Technologies and System Design\nProgramme specific course (MSc), Communication Technologies and System Design\nProgramme specific course (MSc), Electrical Engineering\nTechnological specialization course (MSc), Communication Technologies and System Design\nTechnological specialization course (MSc), Electrical Engineering",
+    "Schedule": "Spring F5 (Wed 8-17)\nmostly afternoons",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Seminars, exercises and design tasks",
+    "Duration of Course": "13 weeks",
+    "Date of examination": "E5A, F5A",
+    "Type of assessment": "Oral examination and reports\nOral exam (30%) reports (70%)",
+    "Aid": "All Aids - with access to the internet",
+    "Evaluation": "7 step scale , external examiner",
+    "Academic prerequisites": "02139.34310",
+    "Responsible": "Michael Stübert Berger , Lyngby Campus, Building 343, Ph. (+45) 4525 3853 , msbe@dtu.dk",
+    "Department": "34 Department of Electrical and Photonics Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nTo enable the students a) to analyse and design integrated circuits based on FPGA technology for use in broadband communications (broadband electronics), especially optical communication and, SDH, OTN, Ethernet, IP and MPLS systems; b) to understand the design principles involved spanning from specification and simulation over synthesis, verification and optimisation; c) to complete a design project, involving specification, implementation and documentation",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nUnderstand fundamental problems in Broadband Electronics development\nDevelop a block level specification (group work)\nImplement a specification in VHDL/Verilog\nWrite efficient VHDL/Verilog code for communication applications\nPerform functional simulation of implemented design\nPerform synthesis and verification\nUse optimisation tools\nWrite a technical report documenting the project\nCarry through a structured development process for an engineering project\nEvaluate and provide constructive criticism for others’ work",
+    "Content": "Survey of high-speed electronic design principles in digital communication systems. VHDL coding styles, FPGA architectures, parallel design, pipelining, memory control, scheduling, error detection, clock and data synchronisation. Hardware architectures and performance of telecommunications and data communication switch systems. Examples from recent or ongoing research. The student projects include high-speed design by use of VHDL (Very high-speed integrated circuits Hardware Description Language) based FPGA design tools.",
+    "Last updated": "02. maj, 2024"
+}

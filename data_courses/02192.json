@@ -1,0 +1,22 @@
+{
+    "course title": "02192 Computer Security Incident Response",
+    "Danish title": "Computersikkerhedshændelseshåndtering",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nElective course (B Eng), IT and Economics\nElective course (B Eng), Computer Engineering\nElective course (B Eng), Software Technology",
+    "Schedule": "Spring F3B (Fri 13-17)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures and assingments",
+    "Duration of Course": "13 weeks",
+    "Type of assessment": "Evaluation of exercises/reports\nAssessment is based on individualized group reports",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "02239 / 02233 , The course is an advanced course that requires basic understanding of computer and network security. The course may be taken in parallel with 02233.",
+    "Responsible": "Nicola Dragoni , Lyngby Campus, Building 322, Ph. (+45) 4525 3731 , ndra@dtu.dk",
+    "Course co-responsible": "Gaurav Choudhary , gauch@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThe aim of this course is to provide a working knowledge of computer security incident response. The course addresses security planning and preparation, security awareness, organizational security exercises and management of ongoing security incidents.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nExplain the risk analysis standards most commonly used in IT-security\nComplete a computer security risk analysis of a small to medium sized organisation\nPresent the results of a risk analysis (both written and orally)\nPropose appropriate controls to mitigate risks identified in a risk analysis\nDescribe common techniques and technologies to detect computer security incidents\nDefine infrastructure to collect and consolidate computer security event data\nWrite a Standard Operating Procedure (a.k.a. a runbook) for a given threat\nDefine a communication strategy for computer security incidents\nDevelop a plan for recovering systems and restoring normal operations",
+    "Content": "The course addresses problems relating to computer security incident event handling, with a special focus on the preparation and detection phases, i.e. incident planning and training. It will cover the most commonly used standards in risk analysis (NIST SP 800-30, ISO 27.001 and Octave) as well as model based risk analysis (CORAS).\nCollection and consolidation of computer security event information, e.g. Security Information and Event Management (SIEM) systems, will also be covered in the course, along with techniques and technologies to identify such events, e.g. Intrusion Detection Systems (IDS).\nThe course will also cover security incident preparation and training through the development of a standard operating procedure (SOP) and the associated communication strategies relating to computer security event handling.\nFinally, the course will introduce common techniques to recover from computer security incidents and restore systems to normal operations.",
+    "Last updated": "20. december, 2024"
+}
