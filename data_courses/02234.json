@@ -1,0 +1,23 @@
+{
+    "course title": "02234 Forskningsemner i cybersikkerhed",
+    "Engelsk titel": "Research Topics in Cybersecurity",
+    "Undervisningssprog": "Engelsk",
+    "Point( ECTS )": "5",
+    "Kursustype": "Kandidat\nRetningsspecifikt kursus (MSc), Computer Science and Engineering\nTeknologisk specialisering (MSc), Computer Science and Engineering\nTilvalgskursus (B Eng), IT og økonomi\nTilvalgskursus (B Eng), IT-elektronik",
+    "Skemaplacering": "E4A (tirs 13-17)",
+    "Undervisningens placering": "Campus Lyngby",
+    "Undervisningsform": "Kurset består af forelæsninger, studenterseminarer og projektarbejde.",
+    "Kursets varighed": "13-uger",
+    "Eksamensplacering": "E4A",
+    "Evalueringsform": "Bedømmelse af opgave(r)/rapport(er)",
+    "Bedømmelsesform": "7-trins skala , intern bedømmelse",
+    "Faglige forudsætninger": "02232/02233 , Kurset er et videregående kursus, der forudsætter kendskab til grundlæggende begreber i computer- og netværkssikkerhed.",
+    "Kursusansvarlig": "Nicola Dragoni , Lyngby Campus, Bygning 322, Tlf. (+45) 4525 3731 , ndra@dtu.dk",
+    "Institut": "01 Institut for Matematik og Computer Science",
+    "Kursushjemmeside": "http://www.compute.dtu.dk/courses/02234",
+    "Tilmelding": "I studieplanlæggeren",
+    "Overordnede kursusmål": "Overordnede kursusmål\nAt give deltagere kendskab til udvalgte avancerede emner i cybersikkerhed. At give deltagere øvelse i at undersøge emner i faglitteraturen samt producere mundtlige og skriftlige præsentationer, der udtrækker de essentielle aspekter ved et emne på basis af et litteraturstudium. Deltagere ventes at lave en mundtlig præsentation med tilhørende præsentationsmateriale i løbet af 13-ugers perioden, samt en afsluttende rapport.",
+    "Læringsmål": "En studerende, der fuldt ud har opfyldt kursets mål, vil kunne:\nSøge i litteraturen efter relevante oplysninger om nye fremskridt inden for cybersikkerhed\nEvaluere kvaliteten og pålideligheden af information om cybersikkerhed fundet fra forskellige informationskilder\nPræsentere the væsentligste aspekter ved en tilgang til et emne fundet i den tilgængelige litteratur\nAnalysere mulige anvendelser af metoder og teorier fundet i litteraturen, med henblik på at opnå givne mål for cybersikkerhed\nDiskutere mulige anvendelser af metoder og teorier fundet i litteraturen, med henblik på at opnå givne mål for cybersikkerhed\nDemonstrere korrekt brug af den terminologi, der benyttes i moderne præsentationer af avancerede emner i cybersikkerhed\nGive en sammenhængende mundtlig præsentation af et udvalgt emne eller emner i cybersikkerhed, baseret på et studium af relevant litteratur\nGive en skriftlig præsentation, i form af et konferencebidrag eller tidsskriftsartikel, en teknisk rapport eller et bidrag til et kompendium, om et udvalgt emne i cybersikkerhed, baseret på et studium af relevant litteratur\nAnalysere, opdele og implementere et cybersikkerhedprojekt i samarbejde med 2 til 4 medstuderende",
+    "Kursusindhold": "Emnerne, der behandles i dette kursus, vil skifte fra år til år. Typisk emner kunne omfatte bl.a.: Tillids- og omdømmesystemer, Systematisk design af sikre IT systems, Sikkerhed i systemer til \"IT overalt\", Privathedsfremmende teknikker.",
+    "Sidst opdateret": "02. maj, 2024"
+}

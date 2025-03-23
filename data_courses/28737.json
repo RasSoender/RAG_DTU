@@ -1,0 +1,22 @@
+{
+    "course title": "28737 Applied Chromatography Project",
+    "Danish title": "Projekt om anvendt kromatografi",
+    "Language of instruction": "English",
+    "Point( ECTS )": "10",
+    "Course type": "MSc\nProgramme specific course (MSc), Chemical and Biochemical Engineering",
+    "Schedule": "Spring\n6 week intensive course in weeks 6 to 11, spring 2026.\nWill not be offered in academic year 2024/2025.",
+    "Location": "Campus Kalundborg",
+    "Scope and form": "Project group work with introduction, industrial visit, lectures/exercises related to group dynamics and innovation processes and lectures/exercises related to chromatography. 6 week intensive course",
+    "Duration of Course": "[The course is not following DTUs normal Schedule]",
+    "Date of examination": "The last day",
+    "Type of assessment": "Oral examination and reports\nSubmission of interim and final reports. Oral examination as project presentation.",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "28761 and 28720",
+    "Responsible": "Martin Høj , Lyngby Campus, Building 229 , mh@kt.dtu.dk",
+    "Department": "28 Department of Chemical Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nTo run a group project related to applied/preparative chromatography in the biomanufacturing industry, including aspects of innovation and group dynamics. The project will include literature survey, basic and more advanced mathematical models.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\ndescribe chromatography processes applied in down stream processing of biomanufacturing products\nsolve fundamental problems related to chromatography\nperform a literature survey and write a literature report on preparative chromatography\nmathematically model chromatography in a column\nmathematically model diffusion in a single particle\nsynthesize a combined column and single particle model\nunderstand and apply the state-of-the-art CADET simulator\nperform a project in a group of students\nunderstand and describe group dynamics and innovation processes\ndisseminate project results in a technical report",
+    "Content": "The course will include visit to an industrial site with thorough introduction to chromatography, lessons related to group dynamics and innovation processes, lessons with lectures and exercises related to chromatography, literature survey of preparative chromatography, developing mathematical models for a chromatographic column with linear and non-linear adsorption isotherms (excluding diffusion), developing a mathematical model for diffusion and adsorption in a single particle, synthesizing a combined column and diffusion model, and introduction and application of the state-of-the-art CADET simulator.\n\nThe literature survey and models will be disseminated in a technical report and presented at an oral examination.",
+    "Last updated": "02. maj, 2024"
+}

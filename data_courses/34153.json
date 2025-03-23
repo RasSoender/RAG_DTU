@@ -1,0 +1,23 @@
+{
+    "course title": "34153 Physical concepts in optical communication",
+    "Danish title": "Fysiske koncepter i optisk kommunikation",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Communication Technologies and System Design\nProgramme specific course (MSc), Engineering Light\nProgramme specific course (MSc), Engineering Physics\nTechnological specialization course (MSc), Communication Technologies and System Design\nTechnological specialization course (MSc), Engineering Light\nTechnological specialization course (MSc), Engineering Physics",
+    "Schedule": "Spring F3A (Tues 8-12)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "13 lectures including problem solving",
+    "Duration of Course": "13 weeks",
+    "Date of examination": "F3A",
+    "Type of assessment": "Oral examination",
+    "Aid": "No Aid",
+    "Evaluation": "7 step scale , external examiner",
+    "Academic prerequisites": "10370/34033/34020/34032/34021",
+    "Responsible": "Michael Galili , Lyngby Campus, Building 340, Ph. (+45) 4525 6608 , mgal@dtu.dk",
+    "Department": "34 Department of Electrical and Photonics Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nTo enable the student to 1) apply his fundamental knowledge in optics and photonics to concrete issues in optical communications. 2) to understand how essential physical mechanisms can be applied to the generation, transmission and detection of optical data in high-speed optical communication systems. 3) to realize that future improvements in state-of-the-art optical transmission technology will rely on a thorough understanding of fundamental physical issues.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nrelate physical properties of the gain mechanisms to amplifier performance (gain and noise figure) in Raman amplifiers and erbium doped fibre amplifiers\nanalyse gain and noise performance of erbium doped fibre amplifiers and Raman amplifiers with respect to application in optical communication systems\ncompare performance of erbium doped fibre amplifiers against Raman amplifiers and parametric amplifiers\nExplain the propagation properties of integrated dielectric waveguides and the effects in silicon used to modulate data signals\napply basic knowledge of electromagnetic theory to analyse the propagation of electromagnetic waves in anisotropic media\nanalyse how the linear electro-optic effect can be exploited to modulate the properties of an electromagnetic field\napply the linear electro-optic effect to the modulation of lightwaves for use in optical communication systems\ncarry out performance evaluation of advanced optical modulation formats and make design choices to find the appropriate format for a specific application",
+    "Content": "The course covers the following topics:\n• Optical Modulation:\n- Light modulation for optical communication - direct vs. external modulation\n- Propagation of electro-magnetic waves in anisotropic media\n- The linear electro-optic effect\n- The Mach-Zehnder modulator\n- Mechanisms and structures for electro-optic modulation in Silicon\n- Generation, properties and performance of advanced modulation formats\n\n• Optical amplification:\n- Rate equations, gain and noise figure\n- Erbium doped fibre amplifiers\n- Raman amplifiers\n- Parametric amplifiers",
+    "Last updated": "02. maj, 2024"
+}

@@ -1,0 +1,23 @@
+{
+    "course title": "12124 Urban Flood Risk Assessment",
+    "Danish title": "Analyse af oversvømmelsesrisiko i byer",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Environmental Engineering\nTechnological specialization course (MSc), Environmental Engineering",
+    "Schedule": "January",
+    "Location": "Campus Lyngby",
+    "Scope and form": "A mixture of lectures and group work. The course requires active participation in group work and discussions in class. A central part of the course is unsupervised group work in the data bar on various cases. During this time the groups are expected to help each other towards understanding and solving the problems at hand.",
+    "Duration of Course": "3 weeks",
+    "Date of examination": "The last day",
+    "Type of assessment": "Oral examination and reports\nOverall assessment of on-line quizzes, group reports, presentations, and peer assessments.",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "12122 , Basic GIS knowledge",
+    "Responsible": "Roland Löwe , Lyngby Campus, Building 115, Ph. (+45) 4525 1694 , rolo@dtu.dk",
+    "Department": "12 Department of Environmental and Resource Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "Green challenge participation": "Please contact the teacher for information on whether this course gives the student the opportunity to prepare a project that may participate in DTU´s Study Conference on sustainability, climate technology, and the environment (GRØN DYST). More infor http://www.groendyst.dtu.dk/english",
+    "General course objectives": "General course objectives\nTo enable participants to model what happens with water during extreme weather situations. The course will involve general considerations for how water propagates through the city, setting up models to dynamically model water flows and using them to perform hazard assessments. We will further introduce economic concepts for flood risk assessment and use them to find cost-effective flood adaptation measures in a concrete case. It is assumed, that students are familiar with basic GIS analysis and formats used by the ArcGIS software, as well as with the application of hydrodynamic models.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nUnderstand the processes leading to flooding in urban areas\nPerform GIS analysis of Digital Terrain Models/Digital Elevation Models to identify the vulnerable areas of a city in regards to flooding\nCreate a hydrodynamic model for urban flood modelling\nPerform screening analysis by means of hand calculations and ID simulations to identify suitable adaptation options\nDocument suitable the solution using a hydrodynamic model\nCalculate expected annual damage based on flood simulations\nUnderstand the definitions of hazards, vulnerabilities, and exposure in an urban flood context\nExplain how to perform an urban flood risk assessment",
+    "Content": "Urban flooding, advanced GIS analysis, urban drainage systems, hydrodynamic flood models, expected Annual Damage",
+    "Last updated": "02. maj, 2024"
+}

@@ -1,0 +1,23 @@
+{
+    "course title": "34251 Advanced forward error correction and iterative decoding",
+    "Danish title": "Avancerede kodningssystemer med iterative dekodningsmetoder",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Communication Technologies and System Design\nTechnological specialization course (MSc), Communication Technologies and System Design",
+    "Schedule": "January",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, exercises, and project work",
+    "Duration of Course": "3 weeks",
+    "Type of assessment": "Evaluation of experiments and reports",
+    "Aid": "All Aids - with access to the internet",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "01405/30300/34230/34231 , Experience in MATLAB/Python is required. C/C++ may be alternatives, but MATLAB is used in examples",
+    "Responsible": "Søren Otto Forchhammer , Lyngby Campus, Building 343, Ph. (+45) 4525 3622 , sofo@dtu.dk",
+    "Department": "34 Department of Electrical and Photonics Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nTo introduce students to advanced forward error correction (FEC) codes such as low-density parity check (LDPC) codes and convolutional turbo codes.\nTo introduce signal processing techniques for their decoding and error correction as applied in communication standards, such as 4G, 5G, deep space and satellite communications, as well as in quantum communication systems, e.g. quantum key distribution.\nTo relate nonlinear signal processing theory to the theory and application of FEC.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nexplain the theory of convolutional codes and their relation to block codes.\nexplain the principle of convolutional turbo codes.\nexplain the principle of LDPC codes.\nexplain the relation between decoding of turbo and LDPC codes and the belief propagation algorithm.\nimplement in Matlab, Python, or C++, C (or similar) an advanced iterative decoder for a turbo, product or an LDPC code.\nsimulate the performance of a typical LDPC or turbo coded system as per a telecommunication standard.\nextract relevant information from telecommunication standards employing convolutional, turbo and LDPC codes.\nDesign a decoder configuration for these codes depending on system requirements for performance and complexity.",
+    "Content": "- Standard convolutional codes of rate 1/n: notation, theory, puncturing-based rate control\nand relation to block codes.\n- The BCJR algorithm for decoding of convolutional codes.\n- Turbo codes with convolutional constituent codes.\n- Turbo codes in telecommunication standards: deep space communications and 4G\n- LDPC codes: notation and theory.\n- LDPC codes in telecommunication standards: DVB-S2 television standard and 5G.\n- Hamming codes as LDPC codes.\n- Decoding algorithms for LDPC codes: the sum-product algorithm.\n- Belief propagation algorithm and its relation to the sum-product and BCJR algorithms.\n- Simulation of basic FEC in the presence of Gaussian noise.\n- Examples of applications in tele- and quantum-communication\n\nThe course is composed of lectures around the topics of interest with simple exercises following each lecture. The course concludes with a project on either an LDPC or a turbo code decoder.",
+    "Remarks": "It is assumed that the students bring their own laptop computer and have access to programming in MATLAB, Python or C/C++.",
+    "Last updated": "28. oktober, 2024"
+}

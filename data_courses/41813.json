@@ -1,0 +1,23 @@
+{
+    "course title": "41813 Finite Element Methods for sound and vibrations",
+    "Danish title": "Finite Element Metoder for lyd og svingninger",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Mechanical Engineering\nTechnological specialization course (MSc), Mechanical Engineering",
+    "Schedule": "Spring F5A (Wed 8-12)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures and computer exercises",
+    "Duration of Course": "13 weeks",
+    "Type of assessment": "Evaluation of exercises/reports\nEvaluation of 2 individualized group reports. Based on an overall assessment.",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "(41560/41237/31270/62643).­(41525/41812) , Fundamental knowledge of mechanical vibrations is required. Knowledge of finite element theory and programming experience in matlab is an advantage.",
+    "Responsible": "Niels Aage , Lyngby Campus, Building 404, Ph. (+45) 4525 4253 , naage@dtu.dk",
+    "Course co-responsible": "Marie Brøns , Lyngby Campus, Building 404, Ph. (+45) 4525 4255 , maribr@dtu.dk",
+    "Department": "41 Department of Civil and Mechanical Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "Green challenge participation": "Please contact the teacher for information on whether this course gives the student the opportunity to prepare a project that may participate in DTU´s Study Conference on sustainability, climate technology, and the environment (GRØN DYST). More infor http://www.groendyst.dtu.dk/english",
+    "General course objectives": "General course objectives\nLoudspeakers and microphones are classical mechanical components that rely on the interaction between vibrations and acoustics. Modern applications (Industry 4.0) ranging from self-powering of IoT-devices by energy-harvesting of ambient acoustic energy, virtual sensing, medical equipment (biomechanics & life-sciences) to novel MEMS based microphones and speakers, all rely on engineers with a fundamental understanding of vibration analysis of complex structures and their coupling to the surroundings. In order to enable such skills, the goal of this course is to teach the students to use the Finite Element Method (FEM) to solve advanced, multiphysics vibration problems with specific consideration to problems that involve acoustic-mechanical interaction. This knowledge will be used to create complex finite element models for realistic assessment of the vibrations of micro scale components that involve acoustics at audible frequencies.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nApply the finite element method to formulate numerical models for vibration problems\nSolve forced vibration problems using direct methods, modal superposition and advanced reduced order models (ROM) such as super-element methods (Craig-Bampton) and the second-order-Arnoldi-method (SOAM).\nEvaluate and implement various material models including different damping models\nSet up and evaluate power flow equations based on a finite element model\nCompute spatial distributions of kinetic, potential and dissipated energy for vibrating structures\nFormulate and implement absorbing boundary conditions for wave propagation problems\nCompute the energy flow in a vibrating structure\nFormulate finite element models for the interaction between a vibrating structure and an acoustic medium\nPerform eigenvalue and forced vibration analysis for mechanical structures involving acoustic interaction\nConstruct complex finite element models for solving acoustic-mechanical interaction problems at micro scale.",
+    "Content": "The course focuses on theoretical lectures combined with computer exercises using Matlab (and sometimes COMSOL) to solve structural vibration problems with and without acoustic coupling. Solution methods will cover modal superposition and direct methods as well as various reduced order model (ROM) techniques. Different material and damping models (proportional, structural) will be analyzed and absorbing boundary conditions will be implemented for the simulation of wave propagation. Power flow analysis and evaluation of kinetic, potential and dissipated energy in vibrating structures will be carried out. Interaction problems are formulated and computations in the form of eigenvalues and forced vibrations are performed. Complex finite element models for micro scale components are constructed.\n\nLectures and computer exercises serve basis for two reports.",
+    "Last updated": "25. november, 2024"
+}

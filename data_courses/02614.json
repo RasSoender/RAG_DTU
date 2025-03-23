@@ -1,0 +1,23 @@
+{
+    "course title": "02614 High-Performance Computing",
+    "Danish title": "High-Performance Computing",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nGeneral competence course (MSc), Mathematical Modelling and Computation\nProgramme specific course (MSc), Autonomous Systems\nProgramme specific course (MSc), Human-Centered Artificial Intelligence\nProgramme specific course (MSc), Mathematical Modelling and Computation\nTechnological specialization course (MSc), Autonomous Systems\nTechnological specialization course (MSc), Human-Centered Artificial Intelligence\nTechnological specialization course (MSc), Mathematical Modelling and Computation",
+    "Schedule": "January",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures, computer exercises and computer projects.",
+    "Duration of Course": "3 weeks",
+    "Type of assessment": "Evaluation of exercises/reports\nAssessment is based on individualized group reports.",
+    "Evaluation": "7 step scale , internal examiner",
+    "Academic prerequisites": "02635 , Experience with programming in C/C++ and numerical computations. Knowledge of the Linux/Unix command line, and programming of shell-scripts is an advantage.",
+    "Participants restrictions": "Maximum: 50",
+    "Responsible": "Bernd Dammann , Lyngby Campus, Building 303B, Ph. (+45) 4525 3371 , beda@dtu.dk",
+    "Department": "01 Department of Applied Mathematics and Computer Science",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nToday's computers with multi-core CPUs, and the usage of GPUs for computations, enable researchers to carry out complex computations on commodity hardware. However, only a few applications exploit the potential processing power, due to the lack of knowledge and understanding, how to write and implement efficient programs and workflows on computers with modern architectures, making use of High-Performance Computing (HPC) methods.\nThis course enables the students to work with computational problems from Scientific Computing and related areas, and their efficient and well performing implementation. The course provides an introduction to the skills needed to utilize high-performance computing methods, and the application and deployment on modern hardware - from a single CPU-core to a GPU, and from a laptop to larger HPC installations.",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nexplain the basics of modern cache-based computer systems as well as high-performance GPUs\nutilize the interplay of computer components like CPU, GPU, caches, and memory\nanalyze performance of Scientific Computing problems\napply optimization techniques on existing codes\ndesign parallel codes for Scientific Computing problems\nwrite parallel programs with OpenMP\nwrite efficient programs for multi-core processors and many-core GPUs\napply modern tools in parallel programming\ndesign, conduct, evaluate and document computer experiments",
+    "Content": "Introduction to high-performance computers emphasizing those aspects that are important in connection with numerical computations for larger problems. Parallel computers and GPUs: architecture and network, with an emphasis on multi-core and SMP computers. Parallel programming using OpenMP.",
+    "Remarks": "Programming and implementation of C/C++ code, as well as using the Linux command line, is an essential part of the course, and thus we advise to have followed course 02635 (or an equivalent course) before taking this course! Contact the responsible course teacher about the prerequisites, if you are in doubt.\nThe course material consists of notes handed out by the lecturers.\nThe course is aimed at students from all master programs. In the case of over-subscription of the course, first priority is given to students from the study programs listed under 'Course type' above.",
+    "Last updated": "02. maj, 2024"
+}

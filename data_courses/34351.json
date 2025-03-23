@@ -1,0 +1,23 @@
+{
+    "course title": "34351 Access networks and home networks",
+    "Danish title": "Access- og hjemmenet",
+    "Language of instruction": "English",
+    "Point( ECTS )": "5",
+    "Course type": "MSc\nOffered as a single course\nProgramme specific course (MSc), Communication Technologies and System Design\nTechnological specialization course (MSc), Communication Technologies and System Design",
+    "Schedule": "Spring F1B (Thurs 13-17)",
+    "Location": "Campus Lyngby",
+    "Scope and form": "Lectures and project work",
+    "Duration of Course": "13 weeks",
+    "Date of examination": "F1B",
+    "Type of assessment": "Oral examination and reports\nOverall assessment based on the oral examination and written reports that are submitted during the teaching period.",
+    "Aid": "All Aids - with access to the internet",
+    "Evaluation": "7 step scale , external examiner",
+    "Academic prerequisites": "34311/34313/34322 . 34210",
+    "Responsible": "Lars Staalhagen , Lyngby Campus, Building 343, Ph. (+45) 4525 3656 , larst@dtu.dk",
+    "Department": "34 Department of Electrical and Photonics Engineering",
+    "Registration Sign up": "At the Studyplanner",
+    "General course objectives": "General course objectives\nThe course provides a broad overview of methods and techniques used to connect different types of terminals, for example. private household appliances, entertainment electronics, telemedicine measuring equipment, sensors (and similar M2M devices) to a communications network. The course will primarily focus on wired networks and networks using non-licensed frequency bands (mobile communication is covered in 34333 and 34343). The course will cover both the physical transmission parts focusing on the different multiplexing methods generally used to achieve high bandwidth efficiency for media with varying characteristics as well as protocol hierarchical aspects that ensure integration of different applications with very different quality needs and requirements for network performance (QoS).",
+    "Learning objectives": "A student who has met the objectives of the course will be able to:\nDescribe the architectural structure of the Internet that ensures connection of users, terminals, services, autonomous devices (e.g. sensors) and the similar.\nExplain the principles of using different network topologies and multiplexing principles for efficient and cost-effective end-user systems.\nExplain the principles and requirements of a public access network and a home network.\nDefine the basic differences between wired and non-wired (wireless) networks.\nDefine the basic differences in shared and dedicated media based on, among other things, performance and service warranty aspects.\nAnalyze the importance of selecting multiplication method for access networks.\nExplain the principles and architectures of xDSL networks, both the basic technology, and the principles of bitstream access, raw copper, traditional and forward DSLAM.\nDescribe the use of optical fiber in access and home network (both active and passive optical access networks).\nClarify the CAP, DMT, FDMA, OFDMA, CDMA and similar principles.\nClarify the basic principles of powerline networks.",
+    "Content": "The course will deal with general aspects of network access and use concrete \"standards\" to exemplify basic trends and differences. The course will evaluate and compare the possibility of increased capacity in the cable network with the flexibility and mobility of wireless networks. Within the public part of the network, solutions will focus on reuse of the existing infrastructure (e.g. cable modem or xDSL), and solutions that require new optical fiber cables (e.g. PONs). There will be great focus on understanding the basic principles and comparison of the advantages and disadvantages of the different solution models. For the home network, focus will also be on comparing the various prevailing technologies and techniques (such as Bluetooth, ZigBee, WiFi, Ethernet, and more) and focusing on how home equipment integrates physical and protocol technical.",
+    "Last updated": "02. maj, 2024"
+}
