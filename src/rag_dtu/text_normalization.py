@@ -2,7 +2,6 @@ import json
 import re
 import nltk
 import string
-import contractions
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -52,7 +51,7 @@ def normalize_course_entry(entry):
 
     # 1. Split course title
     if "course title" in entry:
-        match = re.match(r"(\d+)\s+(.*)", entry["course title"])
+        match = re.match(r"^(\d{5}|\w{2}\d{3})\b\s*(.*)$", entry["course title"])
         if match:
             normalized["course_code"] = match.group(1)
             normalized["course_name"] = match.group(2)
@@ -170,7 +169,7 @@ def main():
     """Main function to execute the script on all courses."""
     try:
         # Load JSON file with course entries
-        with open("all_courses_info.json", "r", encoding="utf-8") as f:
+        with open("data/all_courses_info.json", "r", encoding="utf-8") as f:
             courses = json.load(f)
             
         processed_courses = {}
@@ -189,10 +188,11 @@ def main():
             processed_courses[course_key] = processed
         
         # Save the processed output to a new JSON file
-        with open("processed_courses.json", "w", encoding="utf-8") as f:
+        output_file = "data/processed_courses.json"
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(processed_courses, f, indent=2, ensure_ascii=False)
 
-        print(f"✅ Processed {len(processed_courses)} courses and saved to 'processed_courses.json'")
+        print(f"✅ Processed {len(processed_courses)} courses and saved to '{output_file}'")
         print(f"Total tokens: {total_tokens}")
         
     except FileNotFoundError:
