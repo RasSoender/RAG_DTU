@@ -2,7 +2,7 @@ import os
 import json
 
 # Folder containing all the course JSON files
-folder_path = 'data_courses'
+folder_path = 'data/data_courses'
 
 # Initialize an empty dictionary to store all course data
 all_courses = {}
@@ -28,7 +28,7 @@ for filename in os.listdir(folder_path):
         all_courses[course_code] = course_data
 
 # Save the combined data into a new JSON file
-output_file = 'all_courses_info.json'
+output_file = 'data/all_courses_info.json'
 with open(output_file, 'w', encoding='utf-8') as output:
     json.dump(all_courses, output, ensure_ascii=False, indent=4)
 

@@ -47,7 +47,7 @@ def saving_into_json(scraped_info):
     os.makedirs("data_courses", exist_ok=True)
     
     course_no = scraped_info["course title"][:5]
-    with open(f"data_courses/{course_no}.json", "w", encoding="utf-8") as f:
+    with open(f"data/data_courses/{course_no}.json", "w", encoding="utf-8") as f:
         json.dump(scraped_info, f, ensure_ascii=False, indent=4)
         print(f"JSON file saved successfully for {course_no}!")
     return None
@@ -167,12 +167,12 @@ def process_url(url, index):
         return False
 
 def main():
-    with open("reference_data.json", "r", encoding="utf-8") as file:
+    with open("data/reference_data.json", "r", encoding="utf-8") as file:
         data = json.load(file)
 
     # Extract the arrays
-    course_urls = data.get("course_urls", [])
-    
+    course_urls = [data.get("course_urls", [])]
+  
     start_index = 0
     urls_to_process = course_urls[start_index:]
     
