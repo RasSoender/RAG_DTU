@@ -11,8 +11,34 @@ from text_normalization import normalize_query
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- Helper Functions and Models ---
+# --- Short-Term Memory (Conversation History) ---
+conversation_history = []
 
+def update_conversation_history(user_query, retrieved_info, max_history=2):
+    """
+    Update the conversation history with the latest exchange.
+    Only the last `max_history` exchanges are kept.
+    Instead of storing the assistant's previous prompt, we store the retrieved course information.
+    """
+    conversation_history.append({
+        "user": user_query,
+        "retrieved": retrieved_info
+    })
+    if len(conversation_history) > max_history:
+        conversation_history[:] = conversation_history[-max_history:]
+
+def build_history_context():
+    """
+    Build a string representing the conversation history.
+    Here we include the user query and the previously retrieved course information.
+    """
+    history_lines = []
+    for exchange in conversation_history:
+        history_lines.append(f"User: {exchange['user']}\nRetrieved Info: {exchange['retrieved']}")
+    return "\n\n".join(history_lines)
+
+
+# --- Helper Functions and Models ---
 def get_embedding(text, model="text-embedding-3-small"):
     """
     Returns the embedding vector for the given text using the specified OpenAI model.
@@ -36,10 +62,8 @@ def create_vector_database(processed_courses,
                             name_index_path, 
                             metadata_path):
     """
-    Create FAISS vector indexes for course content and names
+    Create FAISS vector indexes for course content and names.
     """
-
-    # Prepare embeddings and metadata
     content_embeddings = []
     name_embeddings = []
     metadata = {}
@@ -50,7 +74,7 @@ def create_vector_database(processed_courses,
 
     for course_id, course_data in processed_courses.items():
         print(f'Processing course {course_id}')
-              
+        
         # Get course metadata
         course_meta = course_data.get('metadata', {})
         
@@ -86,7 +110,7 @@ def create_vector_database(processed_courses,
     faiss.write_index(content_index, content_index_path)
     faiss.write_index(name_index, name_index_path)
 
-    # Save metadata
+    # Save metadata and mappings
     with open(metadata_path, "wb") as f:
         pickle.dump({
             'metadata': metadata,
@@ -96,7 +120,7 @@ def create_vector_database(processed_courses,
             'name_index_to_id': name_index_to_id
         }, f)
 
-    print(f"Vector database created successfully!")
+    print("Vector database created successfully!")
     print(f"Content embeddings: {content_embeddings.shape}")
     print(f"Name embeddings: {name_embeddings.shape}")
 
@@ -137,17 +161,14 @@ class HybridFAISSVectorDB:
         if os.path.exists(content_index_path) and os.path.exists(name_index_path) and os.path.exists(metadata_path):
             self._load()
         else:
-            # If the indexes do not exist, raise an error.
             raise FileNotFoundError("The FAISS indexes or metadata file was not found. Make sure you have created the vector DB first.")
 
-    def search(self, query, top_k=10, filters=None,
+    def search(self, query, top_k=3, filters=None,
                weight_content=0.7, weight_name=0.3):
         """
         Searches for courses based on the query.
         - If filters include a course code, perform an exact lookup.
         - Otherwise, perform a hybrid semantic search using both embeddings.
-        
-        The weights (weight_content and weight_name) define the contribution of each embedding's distance.
         """
         # First: Exact lookup based on course code
         if filters and 'course_code' in filters:
@@ -216,18 +237,19 @@ class HybridFAISSVectorDB:
             self.content_index_to_id = data.get('content_index_to_id', {})
             self.name_id_to_index = data.get('name_id_to_index', {})
             self.name_index_to_id = data.get('name_index_to_id', {})
-        print("🔁 FAISS indexes and metadata loaded.")
+        print("FAISS indexes and metadata loaded.")
 
 # --- GPT-4 Query Function ---
-
 def query_with_gpt4(user_query, courses_info):
     """
-    Constructs a prompt using the courses' preprocessed information and the user query,
-    then uses GPT-4 to generate a comprehensive answer.
-    
-    courses_info should be a dictionary mapping course IDs to course details.
+    Constructs a prompt using the courses' preprocessed information,
+    conversation history, and the user query, then uses GPT-4 to generate an answer.
+    Returns both the answer and the prompt used.
     """
-    # Build a context string with course code, title, and preprocessed text.
+    # Build conversation history context
+    history_context = build_history_context()
+    
+    # Build course info context string
     context_lines = []
     for course_id, info in courses_info.items():
         metadata = info.get("metadata", {})
@@ -235,31 +257,105 @@ def query_with_gpt4(user_query, courses_info):
         course_name = metadata.get("course_name", "Unnamed Course")
         preprocessed_text = info.get("preprocessed_course", "")
         context_lines.append(
-            f"Course Code: {course_code}\nTitle: {course_name}\nDetails: {preprocessed_text}\n"
+            f"Course Code: {course_code}\nTitle: {course_name}\nDetails: {preprocessed_text}"
         )
-    context_str = "\n---\n".join(context_lines)
+    context_str = "\n\n---\n\n".join(context_lines)
+    
+    # Build the prompt using detailed sections
+    prompt = f"""
+You are a highly knowledgeable academic advisor with expertise in all DTU courses. Your mission is to help users by providing accurate, detailed, and context-aware answers about DTU courses.
 
-    prompt = f"""You are an expert academic advisor.
-Using the following course information, please answer the user's query in detail.
-
-Course Information:
-{context_str}
+------------------------------------------------
+1. **User Query:**
+   - This is the primary question or request from the user.
+   - It is essential to fully understand the query. If the query does not explicitly include a course name or a course code, this signals that you should rely more on the conversation history for context.
 
 User Query:
 {user_query}
 
-Provide a comprehensive answer that is both factual and helpful."""
+------------------------------------------------
+2. **Conversation History:**
+   - This is a record of the recent exchanges between you and the user.
+   - If the query appears generic or ambiguous, or lacks clear course-specific information, review the conversation history for clues.
+   - If the history provides context but the course is still unclear, ask the user to specify the course code.
 
-    response = client.chat.completions.create(model="gpt-4o-mini-2024-07-18",
-    messages=[
-        {"role": "system", "content": "You are an expert academic advisor."},
-        {"role": "user", "content": prompt}
-    ],
-    temperature=0.2)
+Conversation History:
+{history_context}
+
+------------------------------------------------
+3. **Course Information:**
+   - This section contains detailed data about DTU courses, including course codes, names, and other relevant details.
+   - Use this information to answer questions when the query explicitly or implicitly references a specific course.
+
+Course Information:
+{context_str}
+
+------------------------------------------------
+**Your Task:**
+- **Analyze and Interpret:** Examine the user query carefully. If the query lacks explicit course identifiers, give weight to the conversation history to understand the context.
+- **Provide a Comprehensive Answer:** Generate an answer that is both factual and helpful, ensuring you use the relevant course information.
+- **Request Clarification When Needed:** If neither the query nor the conversation history gives enough detail to identify the correct course, kindly ask the user to provide the course code or more specific details.
+
+Generate a comprehensive and precise answer based on the inputs above.
+
+Always answer by talking with someone, do not include your thinking in the answer.
+"""
+    
+    response = client.chat.completions.create(
+        model="gpt-4o-mini-2024-07-18",
+        messages=[
+            {"role": "system", "content": "You are an expert academic advisor."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.1
+    )
+    
     answer = response.choices[0].message.content
-    return answer
-#
-# --- Main Query Flow ---
+    return answer, prompt
+
+
+# --- Interactive Chat Function ---
+def interactive_chat(vector_db, processed_courses):
+    print("Starting interactive chat session. Type 'exit' or 'quit' to end.")
+    while True:
+        user_query = input("\nUser: ")
+        if user_query.strip().lower() in ["exit", "quit"]:
+            print("Exiting interactive chat.")
+            print("Goodbye!")
+            break
+
+        normalized_query, _ = normalize_query(user_query)
+        filters = extract_filters_from_query(normalized_query)
+
+        # Search the vector database using the user query
+        search_results = vector_db.search(normalized_query, top_k=3, filters=filters)
+
+        # Gather detailed course info from processed_courses using the IDs from search results.
+        retrieved_courses = {}
+        for result in search_results:
+            course_id = result["id"]
+            if course_id in processed_courses:
+                retrieved_courses[course_id] = processed_courses[course_id]
+            else:
+                print(f"Warning: Course ID {course_id} not found in processed_courses.")
+
+        # Build a summary string of retrieved course information for conversation history.
+        retrieved_courses_str = ""
+        for course_id, info in retrieved_courses.items():
+            metadata = info.get("metadata", {})
+            course_code = metadata.get("course_code", "N/A")
+            course_name = metadata.get("course_name", "Unnamed Course")
+            retrieved_courses_str += f"Course Code: {course_code}\nTitle: {course_name}\n\n"
+        
+        # Get GPT-4 answer along with the current prompt (for logging purposes)
+        answer, _ = query_with_gpt4(user_query, retrieved_courses)
+        print("\nAssistant:", answer)
+
+        # Update the conversation history with the user query and the retrieved course summary
+        update_conversation_history(user_query, retrieved_courses)
+
+
+# --- Main Flow ---
 if __name__ == "__main__":
     # Load the processed courses JSON (which contains the preprocessed_course text)
     with open("data/processed_courses.json", "r", encoding="utf-8") as f:
@@ -274,35 +370,13 @@ if __name__ == "__main__":
         create_vector_database(processed_courses, content_index_path, name_index_path, metadata_path)
 
     # Initialize the vector database from saved files.
-    vector_db = HybridFAISSVectorDB(content_dim=1536, name_dim=384, content_index_path=content_index_path, name_index_path=name_index_path, metadata_path=metadata_path)
+    vector_db = HybridFAISSVectorDB(
+        content_dim=1536, 
+        name_dim=384, 
+        content_index_path=content_index_path, 
+        name_index_path=name_index_path, 
+        metadata_path=metadata_path
+    )
 
-    # Example user query
-    user_query = "Give me the literature for Advanced Business Analytics"
-    filters = extract_filters_from_query(user_query)
-    normalized_query, _ = normalize_query(user_query, do_stemming=True, do_lemmatization=True, remove_stopwords=True)
-    
-    # Search the vector database using the user query
-    search_results = vector_db.search(normalized_query, top_k=5, filters=filters)
-
-    print(f"\n🔎 Query: {user_query}")
-    print(f"\n🔗 Normalized Query: {normalized_query}")
-    if filters:
-        print(f"🔍 Detected filters: {filters}")
-
-    # Gather detailed course info from processed_courses using the IDs from search results.
-    retrieved_courses = {}
-    for result in search_results:
-        course_id = result["id"]
-        if course_id in processed_courses:
-            retrieved_courses[course_id] = processed_courses[course_id]
-        else:
-            print(f"⚠️ Warning: Course ID {course_id} not found in processed_courses.json.")
-
-    print(f'\n🔢 Number of Search Results: {len(search_results)}')
-    print(f'\n🔍 Search Results: {search_results}')
-
-    # Pass the retrieved course information along with the query to GPT-4 for a detailed answer.
-    answer = query_with_gpt4(user_query, retrieved_courses)
-
-    print("\n📝 GPT-4 Answer:")
-    print(answer)
+    # Start the interactive chat session.
+    interactive_chat(vector_db, processed_courses)
