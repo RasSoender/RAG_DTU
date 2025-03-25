@@ -164,6 +164,45 @@ def build_course_data(course_dict, do_stemming=False, do_lemmatization=False):
 
     return result, token_count
 
+def normalize_query(query, do_stemming=False, do_lemmatization=False, remove_stopwords=True):
+    """
+    Normalize and preprocess a search query for consistent text matching.
+    
+    Args:
+        query (str): The input search query to normalize
+        do_stemming (bool): Whether to apply Porter stemming
+        do_lemmatization (bool): Whether to apply WordNet lemmatization
+        remove_stopwords (bool): Whether to remove English stopwords
+    
+    Returns:
+        tuple: (normalized query string, list of tokens)
+    """
+    # 1. Lowercase
+    text = query.lower()
+
+    # 2. Remove punctuation
+    text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+
+    # 3. Tokenization
+    tokens = word_tokenize(text)
+
+    # 4. Optional stopwords removal
+    if remove_stopwords:
+        tokens = [word for word in tokens if word not in stop_words and word.isalpha()]
+
+    # 5. Stemming / Lemmatization
+    if do_stemming and not do_lemmatization:
+        tokens = [stemmer.stem(word) for word in tokens]
+    elif do_lemmatization and not do_stemming:
+        tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    elif do_stemming and do_lemmatization:
+        # First lemmatization, then stemming
+        tokens = [stemmer.stem(lemmatizer.lemmatize(word)) for word in tokens]
+
+    # 6. Rebuild the text
+    normalized_query = " ".join(tokens)
+
+    return normalized_query, tokens
 
 def main():
     """Main function to execute the script on all courses."""
