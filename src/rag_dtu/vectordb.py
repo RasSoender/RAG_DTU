@@ -60,8 +60,6 @@ def create_vector_database(processed_courses,
         
         # Get name embedding
         course_name = course_meta.get('course_name', '')
-        if course_name is None:
-            continue
         name_emb = get_name_embedding(course_name)
         name_embeddings.append(name_emb)
 
@@ -301,7 +299,7 @@ if __name__ == "__main__":
     # print(f'{search_results=}')
 
     # Pass the retrieved course information along with the query to GPT-4 for a detailed answer.
-    answer = query_with_gpt4(user_query, retrieved_courses)
+    # answer = query_with_gpt4(user_query, retrieved_courses)
 
-    print("\n📝 GPT-4 Answer:")
-    print(answer)
+    # print("\n📝 GPT-4 Answer:")
+    # print(answer)
