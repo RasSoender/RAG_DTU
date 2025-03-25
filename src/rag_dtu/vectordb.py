@@ -6,6 +6,7 @@ import pickle
 import re
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
+from text_normalization import normalize_query
 
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -276,13 +277,15 @@ if __name__ == "__main__":
     vector_db = HybridFAISSVectorDB(content_dim=1536, name_dim=384, content_index_path=content_index_path, name_index_path=name_index_path, metadata_path=metadata_path)
 
     # Example user query
-    user_query = "What are the exam modalities of the course Large Scale Optimization using Decomposition?"
+    user_query = "Give me the literature for Advanced Business Analytics"
     filters = extract_filters_from_query(user_query)
-
+    normalized_query, _ = normalize_query(user_query, do_stemming=True, do_lemmatization=True, remove_stopwords=True)
+    
     # Search the vector database using the user query
-    search_results = vector_db.search(user_query, top_k=5, filters=filters)
+    search_results = vector_db.search(normalized_query, top_k=5, filters=filters)
 
     print(f"\n🔎 Query: {user_query}")
+    print(f"\n🔗 Normalized Query: {normalized_query}")
     if filters:
         print(f"🔍 Detected filters: {filters}")
 
@@ -295,11 +298,11 @@ if __name__ == "__main__":
         else:
             print(f"⚠️ Warning: Course ID {course_id} not found in processed_courses.json.")
 
-    # print(f'{len(search_results)=}')
-    # print(f'{search_results=}')
+    print(f'\n🔢 Number of Search Results: {len(search_results)}')
+    print(f'\n🔍 Search Results: {search_results}')
 
     # Pass the retrieved course information along with the query to GPT-4 for a detailed answer.
-    # answer = query_with_gpt4(user_query, retrieved_courses)
+    answer = query_with_gpt4(user_query, retrieved_courses)
 
-    # print("\n📝 GPT-4 Answer:")
-    # print(answer)
+    print("\n📝 GPT-4 Answer:")
+    print(answer)
