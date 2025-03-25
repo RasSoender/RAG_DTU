@@ -164,7 +164,7 @@ def build_course_data(course_dict, do_stemming=False, do_lemmatization=False):
 
     return result, token_count
 
-def normalize_query(query, do_stemming=False, do_lemmatization=False, remove_stopwords=True):
+def normalize_query(query, do_stemming=False, do_lemmatization=False, remove_stopwords=False):
     """
     Normalize and preprocess a search query for consistent text matching.
     
