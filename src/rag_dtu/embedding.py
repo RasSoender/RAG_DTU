@@ -1,17 +1,18 @@
-import openai
+from openai import OpenAI
 import json
+import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
 # Set your OpenAI API key
-openai.api_key = "your_eopenai_key"
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_embedding(text, model="text-embedding-3-small"):
     """
     Returns the embedding vector for the given text using the specified OpenAI model.
     """
-    response = openai.Embedding.create(input=text, model=model)
-    return response["data"][0]["embedding"]
+    response = client.embeddings.create(input=text, model=model)
+    return response.data[0].embedding
 
 # Initialize a specialized model for short texts (course names)
 name_embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
@@ -46,22 +47,22 @@ def process_courses(json_file_path, use_postprocessed=True):
 
         # Get the course name from metadata or use a default
         course_name = data.get("metadata", {}).get("title", f"Course {course_id}")
-        
+
         # For course titles, include department and course code in the embedding if available
         department = data.get("metadata", {}).get("department", "")
         course_code = data.get("metadata", {}).get("course_code", "")
-        
+
         # Create an enhanced name string with extra context for better embedding
         enhanced_name = f"{course_name}"
         if department:
             enhanced_name += f" - {department}"
         if course_code:
             enhanced_name += f" (Code: {course_code})"
-        
+
         # Generate embeddings: full for course content and specialized for course names
         content_embedding = get_embedding(text)
         name_embedding = get_name_embedding(enhanced_name)
-        
+
         embeddings[course_id] = {
             "content_embedding": content_embedding,
             "name_embedding": name_embedding,
@@ -73,13 +74,13 @@ def process_courses(json_file_path, use_postprocessed=True):
 
 if __name__ == "__main__":
     # Specify the path to your JSON file containing course entries
-    json_file_path = "processed_courses.json"
-    
+    json_file_path = "data/processed_courses.json"
+
     # Process the courses and generate embeddings
     course_embeddings = process_courses(json_file_path, use_postprocessed=True)
-    
+
     # Save the results to a JSON file for later use
     with open("course_embeddings.json", "w", encoding="utf-8") as f:
         json.dump(course_embeddings, f)
-    
+
     print("Content and specialized name embeddings have been generated and saved.")
