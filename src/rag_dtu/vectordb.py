@@ -7,6 +7,8 @@ import re
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 from text_normalization import normalize_query
+from rich.console import Console
+from rich.markdown import Markdown
 
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -37,6 +39,14 @@ def build_history_context():
         history_lines.append(f"User: {exchange['user']}\nRetrieved Info: {exchange['retrieved']}")
     return "\n\n".join(history_lines)
 
+def display_markdown(answer):
+    """
+    Display a markdown-formatted string in a styled way using the rich library.
+    """
+    console = Console()
+    md = Markdown(answer)
+    console.print(md)
+
 
 # --- Helper Functions and Models ---
 def get_embedding(text, model="text-embedding-3-small"):
@@ -53,7 +63,6 @@ def get_name_embedding(text):
     """
     Returns a 384-dimensional embedding for short text like course names.
     """
-    print(f'{text=}')
     embedding = name_embedding_model.encode(text)
     return embedding.tolist()
 
@@ -263,48 +272,65 @@ def query_with_gpt4(user_query, courses_info):
     
     # Build the prompt using detailed sections
     prompt = f"""
-You are a highly knowledgeable academic advisor with expertise in all DTU courses. Your mission is to help users by providing accurate, detailed, and context-aware answers about DTU courses.
+You are a highly knowledgeable and polite academic assistant with expertise in all DTU courses. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU courses. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
 
-------------------------------------------------
-1. **User Query:**
-   - This is the primary question or request from the user.
-   - It is essential to fully understand the query. If the query does not explicitly include a course name or a course code, this signals that you should rely more on the conversation history for context.
+---
+
+### 1. **User Query:**
+- This is the most recent request from the user.
+- If the query does **not include a course name or course code** or something related to the course, it could be a signal that the answer is in the conversation history.
 
 User Query:
 {user_query}
 
-------------------------------------------------
-2. **Conversation History:**
-   - This is a record of the recent exchanges between you and the user.
-   - If the query appears generic or ambiguous, or lacks clear course-specific information, review the conversation history for clues.
-   - If the history provides context but the course is still unclear, ask the user to specify the course code.
+---
 
-Conversation History:
-{history_context}
-
-------------------------------------------------
-3. **Course Information:**
-   - This section contains detailed data about DTU courses, including course codes, names, and other relevant details.
-   - Use this information to answer questions when the query explicitly or implicitly references a specific course.
+### 2. **Course Information:**
+- This section contains official and detailed data about DTU courses.
+- First, try to match the user query with information in this section, but if the user do not provide any course name or code in the query, try firstly to figure out if it is referring to the past query, that is in the conversation history.
 
 Course Information:
 {context_str}
 
-------------------------------------------------
-**Your Task:**
-- **Analyze and Interpret:** Examine the user query carefully. If the query lacks explicit course identifiers, give weight to the conversation history to understand the context.
-- **Provide a Comprehensive Answer:** Generate an answer that is both factual and helpful, ensuring you use the relevant course information.
-- **Request Clarification When Needed:** If neither the query nor the conversation history gives enough detail to identify the correct course, kindly ask the user to provide the course code or more specific details.
+---
 
-Generate a comprehensive and precise answer based on the inputs above.
+### 3. **Conversation History:**
+- This includes recent exchanges between the user and the assistant.
+-You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query informations.
+- If course information is unclear or missing in the query, use this section to infer context from previous user questions or previously retrieved course data.
 
-Always answer by talking with someone, do not include your thinking in the answer.
+Conversation History:
+{history_context}
+
+---
+
+### ✅ **Your Task:**
+1. **Interpret the User Query:**
+   - If the course name or code is clearly mentioned, probably you can find the relevant course details from the Course Information section and answer accordingly.
+   - If not, do not be creative, firstly check the conversation history for figuring out if the present query {user_query} is connected to the last query and so you can find information in the conversation history, otherwise simply ask more information.
+
+2. **Fallback on History:**
+   - If a course information is not found in Course Information, check the Conversation History for a reference to the course or topic, mostly in the previous query.
+
+3. **Ask for Clarification (if needed):**
+   - If the information cannot be determined from either Course Information or Conversation History, reply in a friendly and polite tone:
+     > _"I'm currently unable to identify the course. Could you kindly include the course code so I can help more effectively?"_
+
+---
+
+### ✅ **Response Style:**
+- Speak **in first person**, as if personally giving suggestions or guidance.
+- Always respond in **markdown** format.
+- Be **factual**, **concise**, and **professional**.
+- Avoid showing internal logic or thought process — just speak naturally and helpfully.
+
+---
 """
     
     response = client.chat.completions.create(
         model="gpt-4o-mini-2024-07-18",
         messages=[
-            {"role": "system", "content": "You are an expert academic advisor."},
+            {"role": "system", "content": "You are an expert academic advisor specialized in helping Master's students of Denmark University to find information regarding their courses."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.1
@@ -318,7 +344,7 @@ Always answer by talking with someone, do not include your thinking in the answe
 def interactive_chat(vector_db, processed_courses):
     print("Starting interactive chat session. Type 'exit' or 'quit' to end.")
     while True:
-        user_query = input("\nUser: ")
+        user_query = input("\n 👨‍💼 User 👨‍💼: ")
         if user_query.strip().lower() in ["exit", "quit"]:
             print("Exiting interactive chat.")
             print("Goodbye!")
@@ -328,7 +354,7 @@ def interactive_chat(vector_db, processed_courses):
         filters = extract_filters_from_query(normalized_query)
 
         # Search the vector database using the user query
-        search_results = vector_db.search(normalized_query, top_k=3, filters=filters)
+        search_results = vector_db.search(normalized_query, top_k=5, filters=filters)
 
         # Gather detailed course info from processed_courses using the IDs from search results.
         retrieved_courses = {}
@@ -336,6 +362,9 @@ def interactive_chat(vector_db, processed_courses):
             course_id = result["id"]
             if course_id in processed_courses:
                 retrieved_courses[course_id] = processed_courses[course_id]
+                print(f"Retrieved course ID: {course_id}")
+                print(f"Distance: {result['distance']}")
+                print(f"Metadata: {result['metadata']}")
             else:
                 print(f"Warning: Course ID {course_id} not found in processed_courses.")
 
@@ -349,7 +378,9 @@ def interactive_chat(vector_db, processed_courses):
         
         # Get GPT-4 answer along with the current prompt (for logging purposes)
         answer, _ = query_with_gpt4(user_query, retrieved_courses)
-        print("\nAssistant:", answer)
+        print("\n 🧠 Assistant 🧠:")
+        display_markdown(answer)
+        print("\n---\n")
 
         # Update the conversation history with the user query and the retrieved course summary
         update_conversation_history(user_query, retrieved_courses)
