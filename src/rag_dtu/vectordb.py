@@ -362,9 +362,6 @@ def interactive_chat(vector_db, processed_courses):
             course_id = result["id"]
             if course_id in processed_courses:
                 retrieved_courses[course_id] = processed_courses[course_id]
-                print(f"Retrieved course ID: {course_id}")
-                print(f"Distance: {result['distance']}")
-                print(f"Metadata: {result['metadata']}")
             else:
                 print(f"Warning: Course ID {course_id} not found in processed_courses.")
 
@@ -411,3 +408,7 @@ if __name__ == "__main__":
 
     # Start the interactive chat session.
     interactive_chat(vector_db, processed_courses)
+
+
+weaviate_url = "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud"
+weaviate_api_key = "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm"
