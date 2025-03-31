@@ -44,9 +44,84 @@ def clean_text(text):
     text = re.sub(r'\s+', ' ', text)  # normalize spaces
     return text.strip()
 
+def add_semester_info(entry):
+    schedule = entry.get("Schedule", "").lower()
 
-def normalize_course_entry(entry):
-    """Normalize course entry structure."""
+    semesters = []
+    if "spring" in schedule:
+        semesters.append("13 weeks spring")
+    if "autumn" in schedule:
+        semesters.append("13 weeks autumn")
+    if any(month in schedule for month in ["january", "august", "july", "june"]):
+        semesters.append("3 weeks january")
+    entry["Semester"] = None
+    entry["Semester"] = semesters if semesters else ["Unknown"]
+    return entry
+
+
+def attach_exam_dates(entry, course_code, exam_map, reexam_map):
+    # Extract schedule and exam-related text
+    schedule = entry.get("Schedule", "")
+    examination = entry.get("Date of examination", "")
+
+    # Extract schedule codes from both fields
+    def extract_schedule_keys(text):
+        matches = re.findall(r'\b[FE]\d[-]?[AB]\b', text.upper())
+        return [key.replace("-", "") for key in matches]
+
+    schedule_keys_sched = extract_schedule_keys(schedule)
+    schedule_keys_exam = extract_schedule_keys(examination)
+
+    # Merge the two
+    if schedule_keys_sched == schedule_keys_exam:
+        schedule_keys = schedule_keys_sched
+    elif not schedule_keys_sched:
+        schedule_keys = schedule_keys_exam
+    elif not schedule_keys_exam:
+        schedule_keys = schedule_keys_sched
+    else:
+        schedule_keys = list(dict.fromkeys(schedule_keys_sched + schedule_keys_exam))  # deduplicated
+
+    # Detect months and append corresponding 3-week keys
+    months = ['january', 'june', 'july', 'august']
+    for month in months:
+        if month in schedule.lower():
+            schedule_keys.append(f"3-weeks {month}")
+            break
+
+    # Debug print
+    print(f"Schedule keys: {schedule_keys}")
+
+    # Try course code
+    exam = exam_map.get(course_code)
+    reexam = reexam_map.get(course_code)
+
+    # Try schedule keys if needed
+    if not exam:
+        for sk in schedule_keys:
+            if sk in exam_map:
+                exam = exam_map[sk]
+                print(f"Exam found via schedule key: {sk} → {exam}")
+                break
+    if not reexam:
+        for sk in schedule_keys:
+            if sk in reexam_map:
+                reexam = reexam_map[sk]
+                print(f"Reexam found via schedule key: {sk} → {reexam}")
+                break
+
+    # Update entry
+    entry["Exam"] = exam
+    entry["Reexam"] = reexam
+
+    return entry
+
+
+
+def normalize_course_entry(entry, exam_map, reexam_map):
+    """Normalize course entry structure and enrich with semester and exam info."""
+    import re
+
     normalized = {}
 
     # 1. Split course title
@@ -60,24 +135,31 @@ def normalize_course_entry(entry):
     if "Language of instruction" in entry:
         normalized["Language"] = entry["Language of instruction"].strip()
     
-    # 3. Rename and convert "Point( ECTS )" → "ECTS" (int if possible)
+    # 3. Rename and convert "Point( ECTS )" → "ECTS"
     if "Point( ECTS )" in entry:
         try:
             normalized["ECTS"] = int(entry["Point( ECTS )"].strip())
         except ValueError:
             normalized["ECTS"] = entry["Point( ECTS )"].strip()
 
-    # 4. Copy all other allowed fields
+    # 4. Copy remaining fields (unless skipped)
     for key, value in entry.items():
-        if key in FIELDS_TO_SKIP:
-            continue  # Skip unwanted or already handled
+        if key in FIELDS_TO_SKIP or key in ["course title", "Language of instruction", "Point( ECTS )"]:
+            continue
 
         if isinstance(value, str):
-            value = re.sub(r'\s+', ' ', value).strip()  # clean up spaces/newlines
+            value = re.sub(r'\s+', ' ', value).strip()
 
         normalized[key.strip()] = value
 
+    # 5. Add semester info
+    normalized = add_semester_info(normalized)
+
+    # 6. Attach exam and re-exam dates
+    normalized = attach_exam_dates(normalized, normalized["course_code"], exam_map, reexam_map)
+
     return normalized
+
 
 
 def normalize_text_fields(entry):
@@ -105,6 +187,7 @@ def normalize_text_fields(entry):
         normalized[new_key] = value
 
     return normalized
+
 
 
 def preprocess_course_text(course_dict, do_stemming=False, do_lemmatization=False):
@@ -139,11 +222,13 @@ def preprocess_course_text(course_dict, do_stemming=False, do_lemmatization=Fals
     return processed_text, len(tokens)
 
 
-def build_course_data(course_dict, do_stemming=False, do_lemmatization=False):
+def build_course_data(course_dict, exam_by_code, reexam_by_code, do_stemming=False, do_lemmatization=False):
     """Build a processed course data object from raw course data."""
     # Step 1: Normalize structure and texts
-    normalized = normalize_text_fields(normalize_course_entry(course_dict))
+    normalized = normalize_text_fields(normalize_course_entry(course_dict, exam_by_code, reexam_by_code))
 
+
+    print(f"Normalized course data: {normalized}")
     # Step 2: Build text before preprocessing (combine string values)
     preprocessed_text = " ".join(str(v) for v in normalized.values() if isinstance(v, str))
 
@@ -158,7 +243,11 @@ def build_course_data(course_dict, do_stemming=False, do_lemmatization=False):
         "metadata": {
             "course_code": normalized.get("course_code"),
             "course_name": normalized.get("course_name"),
-            "schedule": normalized.get("schedule")
+            "schedule": normalized.get("schedule"),
+            "exam": normalized.get("exam"),
+            "reexam": normalized.get("reexam"),
+            "semester": normalized.get("semester"),
+            "ECTS": normalized.get("ects")
         }
     }
 
@@ -210,6 +299,14 @@ def main():
         # Load JSON file with course entries
         with open("data/all_courses_info.json", "r", encoding="utf-8") as f:
             courses = json.load(f)
+
+        with open("data/exam_schedule_dtu.json", "r") as f:
+            exam_data = json.load(f)
+
+        exam_by_code = exam_data["EXAM_BY_CODE"]
+        reexam_by_code = exam_data["REEXAM_BY_CODE"]
+
+        print(exam_by_code)
             
         processed_courses = {}
         total_tokens = 0
@@ -222,7 +319,7 @@ def main():
             if "Engelsk titel" in course_data:
                 continue
                 
-            processed, token_count = build_course_data(course_data, do_stemming=False, do_lemmatization=True)
+            processed, token_count = build_course_data(course_data, exam_by_code=exam_by_code, reexam_by_code=reexam_by_code, do_stemming=False, do_lemmatization=True)
             total_tokens += token_count
             processed_courses[course_key] = processed
         
