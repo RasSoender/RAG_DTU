@@ -142,7 +142,7 @@ def create_weaviate_schema():
                 description="Planned lectures"
             ),
             Property(
-                name="ECTS",
+                name="ects",
                 data_type=DataType.TEXT,
                 description="Number of ECTS of the course"
             ),
@@ -182,7 +182,7 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         semester = course_meta.get('semester', '')
         semester_str = ", ".join(semester) if isinstance(semester, list) else str(semester)
         exam = course_meta.get('exam', '')
-        ECTS = str(course_meta.get('ECTS', ''))
+        ects = str(course_meta.get('ects', ''))
         schedule = course_meta.get('schedule', '')
 
 
@@ -198,7 +198,7 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
                 "semester": semester_str,
                 "exam": exam,
                 "schedule": schedule,
-                "ECTS": ECTS
+                "ects": ects
             },
             uuid=proper_uuid,
             vector= {
@@ -208,6 +208,8 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         )
         print(f"Adding course {course_id} to Weaviate")
         course_objs.append(course_obj)
+        if count==10:
+            print(course_obj.properties)
     for obj in course_objs:
         try:
             course_collection.data.insert(
@@ -312,14 +314,14 @@ def query_with_gpt4(user_query, courses_info):
         course_name = course.get("course_name", "Unnamed Course")
         preprocessed_text = course.get("content", "")
         semester = course.get("semester", "N/A"),
-        ECTS = course.get("ECTS", "N/A"),
+        ects = course.get("ects", "N/A"),
         schedule = course.get("schedule", "N/A"),
         exam = course.get("exam", "N/A"),
 
         context_lines.append(
             f"Course Code: {course_code}\n"
             f"Title: {course_name}\n"
-            f"ECTS: {ECTS}\n"
+            f"ECTS: {ects}\n"
             f"Semester: {semester}\n"
             f"Schedule: {schedule}\n"
             f"Exam Date: {exam}\n"
@@ -393,7 +395,7 @@ Conversation History:
         ],
         temperature=0.1
     )
-    
+    print(prompt)
     answer = response.choices[0].message.content
     return answer, prompt
 
@@ -428,21 +430,22 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
         # Search Weaviate using the user query
         search_results = search_courses(normalized_query, top_k=5, filters=filters)
 
+
         # Format retrieved courses for conversation history
         retrieved_courses_str = ""
         for course in search_results:
-            metadata = course.get("metadata", {})
-            course_code = metadata.get("course_code", "N/A")
-            course_name = metadata.get("course_name", "Unnamed Course")
+            print(course)
+            course_code = course.get("course_code", "N/A")
+            course_name = course.get("course_name", "Unnamed Course")
             content = course.get("content", "No content available")
             semester = course.get("semester", "N/A")
-            ECTS = course.get("ECTS", "N/A")
+            ects = course.get("ects", "N/A")
             schedule = course.get("schedule", "N/A")
             exam = course.get("exam", "N/A")
             # Format the course information
             retrieved_courses_str += f"Course Code: {course_code}\n"
             retrieved_courses_str += f"Title: {course_name}\n"
-            retrieved_courses_str += f"ECTS: {ECTS}\n"
+            retrieved_courses_str += f"ECTS: {ects}\n"
             retrieved_courses_str += f"Semester: {semester}\n"
             retrieved_courses_str += f"Schedule: {schedule}\n"
             retrieved_courses_str += f"Exam Date: {exam}\n"
@@ -465,6 +468,16 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
 if __name__ == "__main__":
     processed_embedding_path = "data/course_embeddings.json"
     processed_courses_path = "data/processed_courses.json"
+
+    with open(processed_embedding_path, "r", encoding="utf-8") as f:
+        processed_embeddings = json.load(f)
+    
+    print("Loaded processed embeddings.")
+    #print first embedding
+    for course_id, course_data in processed_embeddings.items():
+        print(f"Course ID: {course_id}")
+        print(f"Metadata: {course_data['metadata']}")  # Print first 5 elements of the embedding
+        break
     
     # Start the interactive chat session
     interactive_chat(processed_embedding_path, processed_courses_path)
