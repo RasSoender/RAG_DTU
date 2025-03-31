@@ -48,14 +48,12 @@ def process_courses(json_file_path, use_postprocessed=True):
         # Get the course name from metadata or use a default
         course_name = data.get("metadata", {}).get("title", f"Course {course_id}")
 
-        # For course titles, include department and course code in the embedding if available
-        department = data.get("metadata", {}).get("department", "")
         course_code = data.get("metadata", {}).get("course_code", "")
+
+
 
         # Create an enhanced name string with extra context for better embedding
         enhanced_name = f"{course_name}"
-        if department:
-            enhanced_name += f" - {department}"
         if course_code:
             enhanced_name += f" (Code: {course_code})"
 
