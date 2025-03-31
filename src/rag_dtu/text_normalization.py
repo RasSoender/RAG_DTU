@@ -52,8 +52,10 @@ def add_semester_info(entry):
         semesters.append("13 weeks spring")
     if "autumn" in schedule:
         semesters.append("13 weeks autumn")
-    if any(month in schedule for month in ["january", "august", "july", "june"]):
-        semesters.append("3 weeks january")
+    for month in ["january", "august", "july", "june"]:
+        if month in schedule:
+            semesters.append(f"3 weeks {month}")
+            break  # Rimuovi il break se vuoi aggiungerli tutti
     entry["Semester"] = None
     entry["Semester"] = semesters if semesters else ["Unknown"]
     return entry
@@ -117,7 +119,6 @@ def attach_exam_dates(entry, course_code, exam_map, reexam_map):
     return entry
 
 
-
 def normalize_course_entry(entry, exam_map, reexam_map):
     """Normalize course entry structure and enrich with semester and exam info."""
     import re
@@ -138,9 +139,9 @@ def normalize_course_entry(entry, exam_map, reexam_map):
     # 3. Rename and convert "Point( ECTS )" → "ECTS"
     if "Point( ECTS )" in entry:
         try:
-            normalized["ECTS"] = int(entry["Point( ECTS )"].strip())
+            normalized["ects"] = int(entry["Point( ECTS )"].strip())
         except ValueError:
-            normalized["ECTS"] = entry["Point( ECTS )"].strip()
+            normalized["ects"] = entry["Point( ECTS )"].strip()
 
     # 4. Copy remaining fields (unless skipped)
     for key, value in entry.items():
@@ -247,7 +248,7 @@ def build_course_data(course_dict, exam_by_code, reexam_by_code, do_stemming=Fal
             "exam": normalized.get("exam"),
             "reexam": normalized.get("reexam"),
             "semester": normalized.get("semester"),
-            "ECTS": normalized.get("ects")
+            "ects": normalized.get("ects")
         }
     }
 
