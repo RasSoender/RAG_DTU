@@ -103,7 +103,6 @@ def create_weaviate_schema():
 
     for collection in collections:
         if collection == "Course":
-            print("Course collection already exists")
             return True
     
     # Define the collection
@@ -208,8 +207,6 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         )
         print(f"Adding course {course_id} to Weaviate")
         course_objs.append(course_obj)
-        if count==10:
-            print(course_obj.properties)
     for obj in course_objs:
         try:
             course_collection.data.insert(
@@ -288,7 +285,6 @@ def search_courses(query, top_k=3, filters=None, weight_content=0.7, weight_name
         )
 
         if len(response.objects) > 0:
-            print(f"Found {len(response.objects)} courses matching the query.")
             # Sort by distance
             return [obj.properties for obj in response.objects]
     except Exception as e:
@@ -395,7 +391,6 @@ Conversation History:
         ],
         temperature=0.1
     )
-    print(prompt)
     answer = response.choices[0].message.content
     return answer, prompt
 
@@ -403,6 +398,7 @@ Conversation History:
 # --- Interactive Chat Function ---
 def interactive_chat(processed_embedding_path, processed_courses_path):
     print("Starting interactive chat session. Type 'exit' or 'quit' to end.")
+    print("\n 🧠 Assistant 🧠: Hi! I am your assistant for DTU courses information :) How can I help you?")
     
     # Load processed courses if needed for additional information
     with open(processed_courses_path, "r", encoding="utf-8") as f:
@@ -434,7 +430,6 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
         # Format retrieved courses for conversation history
         retrieved_courses_str = ""
         for course in search_results:
-            print(course)
             course_code = course.get("course_code", "N/A")
             course_name = course.get("course_name", "Unnamed Course")
             content = course.get("content", "No content available")
@@ -474,10 +469,6 @@ if __name__ == "__main__":
     
     print("Loaded processed embeddings.")
     #print first embedding
-    for course_id, course_data in processed_embeddings.items():
-        print(f"Course ID: {course_id}")
-        print(f"Metadata: {course_data['metadata']}")  # Print first 5 elements of the embedding
-        break
     
     # Start the interactive chat session
     interactive_chat(processed_embedding_path, processed_courses_path)
