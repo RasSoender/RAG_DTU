@@ -1,0 +1,219 @@
+import json
+import re
+import nltk
+import string
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+from nltk.tokenize import word_tokenize
+
+
+# Initialize NLP tools
+stop_words = set(stopwords.words('english'))
+stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
+
+# Constants
+FIELDS_TO_SKIP = [
+    "Curriculum, previous admission years",
+]
+
+
+def to_snake_case(s):
+    """Convert a string to snake_case format."""
+    s = s.strip().lower()
+    s = re.sub(r'[^\w\s]', '', s)
+    s = re.sub(r'\s+', '_', s)
+    return s
+
+
+def clean_text(text):
+    """Clean up spacing and punctuation in text."""
+    text = re.sub(r'\s+([.,:%])', r'\1', text)  # remove space before punctuation
+    text = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", text) # Remove markdown links, keeping only the text inside brackets
+    text = text.replace("\n", " ").replace("*", "") # Remove special characters: asterisks (*) and newlines (\n)
+    text = re.sub(r'\s+', ' ', text)  # normalize spaces
+    return text.strip()
+
+def extract_degree_name(text):
+    # Define patterns to match
+    patterns = [
+        r"master of science in engineering\s*",  # Match "master of science in engineering" + space
+        r"master of science\s*"                  # Match "master of science" + space
+    ]
+    
+    for pattern in patterns:
+        match = re.match(pattern, text, re.IGNORECASE)  # Check if the text starts with the pattern
+        if match:
+            return text[match.end():].strip()  # Extract everything after the matched phrase
+    
+    print(f"❌ No match found in the text: {text}")
+    return text  # Return the original text if no match
+
+def normalize_programme_entry(entry):
+    """Normalize programme entry structure."""
+    import re
+
+    normalized = {}
+
+    # 1. Split programme title
+    if "Official title" in entry:
+        match = re.search(r"Master.*", entry["Official title"])
+
+        # Extract and print the matched substring
+        if match:
+            result = match.group(0)
+            print(f"Matched programme title: {result}")
+            normalized["programme_name"] = result.strip()
+        else:
+            print("No match found in the programme title.")
+            normalized["programme_name"] = entry["Official title"].strip()
+    
+    new_names = {
+        "About the Programme Specification": "programme_specification",
+        "Duration": "duration",
+        "General admission requirements": "admission_requirements",
+        "Academic requirements for this programme": "academic_requirements",
+        "Competence profile": "competence_profile",
+        "Programme specific goals for learning outcome": "learning_objectives",
+        "Structure": "structure",
+        "Programme provision": "programme_provision",
+        "Specializations": "specializations",
+        "Curriculum": "curriculum",
+        "Curriculum, previous admission years": "curriculum_previous_years",
+        "Master's thesis": "master_thesis",
+        "Master thesis, specific rules": "master_thesis_specific_rules",
+        "Study Activity Requirements and Deadlines": "activity_requirements",
+        "Study Programme Rules": "programme_rules",
+        "Regarding course descriptions": "course_descriptions",
+        "Course registration": "course_registration",
+        "Binding courses": "binding_courses",
+        "Academic prerequisites for course participation": "academic_prerequisites",
+        "Participation in limited admission courses": "limited_admission_courses",
+        "Mandatory participation in class and exam prerequisites": "mandatory_participation",
+        "Deadlines for publication of teaching material and syllabus": "teaching_material_deadlines",
+        "Project courses": "project_courses",
+        "Evaluation of teaching": "evaluation_of_teaching",
+        "Exam rules": "exam_rules",
+        "Credit Transfer, Studying Abroad, Exemption, Leave, etc.": "other_info",
+        "Head of study": "head_of_study",
+    }
+
+    # 4. Copy remaining fields (unless skipped)
+    for key, value in entry.items():
+        if key in FIELDS_TO_SKIP or key in ["Official title"]:
+            continue
+
+        if isinstance(value, str):
+            value = re.sub(r'\s+', ' ', value).strip()
+
+        normalized[new_names[key]] = value
+
+
+    return normalized
+
+
+
+def normalize_text_fields(entry):
+    """Normalize and clean text fields in a programme entry."""
+    normalized = {}
+
+    for key, value in entry.items():
+        new_key = to_snake_case(key)
+        
+        if isinstance(value, str):
+            value = clean_text(value)
+
+        normalized[new_key] = value
+
+    return normalized
+
+
+
+def preprocess_programme_text(programme_dict, do_stemming=False, do_lemmatization=False):
+    """Preprocess programme text for NLP analysis."""
+    
+    for key, value in programme_dict.items():
+        # 3. Lowercase
+        text = value.lower()
+
+        # 4. Remove punctuation
+        text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+
+        # 5. Tokenization
+        tokens = word_tokenize(text)
+
+        # 6. Remove stopwords
+        #tokens = [word for word in tokens if word not in stop_words and word.isalpha()]
+
+        # 7. Stemming / Lemmatization
+        if do_stemming and not do_lemmatization:
+            tokens = [stemmer.stem(word) for word in tokens]
+        elif do_lemmatization and not do_stemming:
+            tokens = [lemmatizer.lemmatize(word) for word in tokens]
+        elif do_stemming and do_lemmatization:
+            # First lemmatization, then stemming
+            tokens = [stemmer.stem(lemmatizer.lemmatize(word)) for word in tokens]
+
+        # 8. Rebuild the text
+        processed_text = " ".join(tokens)
+
+        programme_dict[key] = processed_text
+
+    return programme_dict
+
+
+def build_programme_data(programme_dict, do_stemming=False, do_lemmatization=False):
+    """Build a processed programme data object from raw programme data."""
+    # Step 1: Normalize structure and texts
+    normalized = normalize_text_fields(normalize_programme_entry(programme_dict))
+
+
+    # print(f"Normalized programme data: {normalized}")
+    # Step 2: Build text before preprocessing (combine string values)
+    # preprocessed_text = " ".join(str(v) for v in normalized.values() if isinstance(v, str))
+
+    # Step 3: Complete preprocessing
+    postprocessed_dict = preprocess_programme_text(normalized, do_stemming=do_stemming, do_lemmatization=do_lemmatization)
+
+    programme_name = extract_degree_name(normalized.get("programme_name"))
+    
+    # Step 4: Add metadata
+    postprocessed_dict["metadata"] = {
+        "programme_name": programme_name
+    }
+
+    return postprocessed_dict
+
+
+def main():
+    """Main function to execute the script on all programmes."""
+    try:
+        # Load JSON file with programme entries
+        with open("data/all_programmes_info.json", "r", encoding="utf-8") as f:
+            programmes = json.load(f)
+
+        processed_programmes = {}
+
+        print(f"Processing {len(programmes)} programmes...")
+        
+        # Process all programmes
+        for programme_name, programme_data in programmes.items():
+                
+            processed= build_programme_data(programme_data, do_stemming=False, do_lemmatization=True)
+            processed_programmes[programme_name] = processed
+        
+        # Save the processed output to a new JSON file
+        output_file = "data/processed_programmes.json"
+        with open(output_file, "w", encoding="utf-8") as f:
+            json.dump(processed_programmes, f, indent=2, ensure_ascii=False)
+
+        print(f"✅ Processed {len(processed_programmes)} programmes and saved to '{output_file}'")
+        
+    except FileNotFoundError:
+        print("❌ Error: Could not find input file 'all_programmes_info.json'")
+    except json.JSONDecodeError:
+        print("❌ Error: Invalid JSON format in input file")
+
+
+if __name__ == "__main__":
+    main()
