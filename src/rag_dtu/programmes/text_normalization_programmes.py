@@ -15,6 +15,7 @@ lemmatizer = WordNetLemmatizer()
 # Constants
 FIELDS_TO_SKIP = [
     "Curriculum, previous admission years",
+    "Exam rules", # skip for now because it is too long for one embedding
 ]
 
 
