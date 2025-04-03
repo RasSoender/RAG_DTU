@@ -3,3 +3,4 @@ selenium==4.30.0
 webdriver_manager==4.0.2
 faiss-cpu==1.10.0
 sentence_transformers==3.4.1
+weaviate-client==4.11.3
