@@ -25,41 +25,79 @@ def get_name_embedding(text):
     embedding = name_embedding_model.encode(text)
     return embedding.tolist()
 
-def process_programme(json_file_path, use_postprocessed=True):
+def merge_files(normal, summarized):
+    """
+    Merges two JSON files, normal and summarized, into a single dictionary.
+    The keys are the programme names, and the values are dictionaries containing
+    the content and metadata.
+    """
+    merged = {}
+    for programme_name, data in summarized.items():
+        merged[programme_name] = {}
+        for key, value in data.items():
+            if not value or value.strip() == "":
+                merged[programme_name][key] = normal.get(programme_name, {}).get(key, "")
+            else:
+                merged[programme_name][key] = value
+    return merged
+
+
+def process_programme(json_file_path, json_summarized_path, use_postprocessed=True):
     """
     Processes a JSON file with programme entries, generating embeddings for each programme.
-    Generates a full embedding for programme content via OpenAI and a specialized embedding for programme names.
+    Embeddings are stored directly under the programme, with a 'metadata' dict containing
+    field-level metadata for each field.
     
-    Returns a dictionary with programme IDs as keys and a dict with content embedding, name embedding, and metadata.
+    Returns a dictionary with programme names as keys and all embeddings + metadata.
     """
+    import json
+
     with open(json_file_path, "r", encoding="utf-8") as f:
         programmes = json.load(f)
 
+    with open(json_summarized_path, "r", encoding="utf-8") as f:
+        summarized_programmes = json.load(f)
+
+    # Merge the two JSON files
+    merged_programmes = merge_files(programmes, summarized_programmes)
+
+    # Save the merged data
+    with open("data/merged_programmes.json", "w", encoding="utf-8") as f:
+        json.dump(merged_programmes, f, indent=2)
+
     embeddings = {}
-    for programme_name, data in programmes.items():
+    for programme_name, data in merged_programmes.items():
         print(f"Processing programme: {programme_name}")
 
-        name_embedding = get_name_embedding(programme_name)
-
-        embeddings[programme_name] = {
-            "name_embedding": name_embedding,
-            "metadata": data.get("metadata", {})
+        # Initialize container for this programme
+        programme_entry = {
+            "name_embedding": get_name_embedding(programme_name),
+            "metadata": {}
         }
 
         for key, value in data.items():
-            if isinstance(value, str) and key != "metadata":
-                embeddings[key] = get_embedding(value)  
+            if isinstance(value, str) and value.strip() != "" and key != "metadata":
+                field_embedding = get_embedding(value)
+                programme_entry[key] = field_embedding
+                programme_entry["metadata"][key] = {
+                    "programme_name": programme_name
+                }
 
-        print(f"Processed programme with specialized name embedding for '{programme_name}'")
+        embeddings[programme_name] = programme_entry
+        print(f"Processed: {programme_name}")
 
     return embeddings
+
+
 
 if __name__ == "__main__":
     # Specify the path to your JSON file containing programme entries
     json_file_path = "data/processed_programmes.json"
 
+    summarized_path = "data/summarized_programmes.json"
+
     # Process the programmes and generate embeddings
-    programme_embeddings = process_programme(json_file_path)
+    programme_embeddings = process_programme(json_file_path, summarized_path)
 
     # Save the results to a JSON file for later use
     with open("data/programme_embeddings.json", "w", encoding="utf-8") as f:
