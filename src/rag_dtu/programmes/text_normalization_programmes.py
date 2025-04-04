@@ -5,13 +5,15 @@ import string
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from openai import OpenAI
+import os
 
 
 # Initialize NLP tools
 stop_words = set(stopwords.words('english'))
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
-
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # Constants
 FIELDS_TO_SKIP = [
     "Curriculum, previous admission years",
@@ -49,10 +51,9 @@ def extract_degree_name(text):
     
     print(f"❌ No match found in the text: {text}")
     return text  # Return the original text if no match
-
+    
 def normalize_programme_entry(entry):
     """Normalize programme entry structure."""
-    import re
 
     normalized = {}
 
@@ -116,6 +117,9 @@ def normalize_programme_entry(entry):
 
 def normalize_text_fields(entry):
     """Normalize and clean text fields in a programme entry."""
+
+    #entry name print
+
     normalized = {}
 
     for key, value in entry.items():
@@ -128,12 +132,29 @@ def normalize_text_fields(entry):
 
     return normalized
 
+def summarization(text, model = "gpt-4o-mini-2024-07-18"):
+    """Summarize text using OpenAI's GPT model."""
+    try:
+        response = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "user", "content": f"Summarize the following text including all informations and the summarization should be thought for a retrieval application: {text}"}
+            ],
+            max_tokens=500,
+            temperature=0.5
+        )
+        summary = response.choices[0].message.content
+        return summary
+    except Exception as e:
+        print(f"Error during summarization: {e}")
+        return text  # Return original text if summarization fails
 
-
-def preprocess_programme_text(programme_dict, do_stemming=False, do_lemmatization=False):
+def preprocess_programme_text(programme_dict,programme_name, do_stemming=False, do_lemmatization=False):
     """Preprocess programme text for NLP analysis."""
-    
+    summarized_programme_dict = {}  
     for key, value in programme_dict.items():
+
+        print(f"Processing field: {key}")
         # 3. Lowercase
         text = value.lower()
 
@@ -142,6 +163,19 @@ def preprocess_programme_text(programme_dict, do_stemming=False, do_lemmatizatio
 
         # 5. Tokenization
         tokens = word_tokenize(text)
+
+        summ_text = ""
+        # 6. Summarization
+
+        if len(tokens) > 800:
+            # 6. Summarization
+            text_summarized = summarization(value)
+            tex = text_summarized.lower()
+            # Remove punctuation
+            tex = re.sub(f"[{re.escape(string.punctuation)}]", " ", text_summarized)
+            tokens_summarized = word_tokenize(tex)
+            summ_text = " ".join(tokens_summarized)
+            
 
         # 6. Remove stopwords
         #tokens = [word for word in tokens if word not in stop_words and word.isalpha()]
@@ -157,16 +191,19 @@ def preprocess_programme_text(programme_dict, do_stemming=False, do_lemmatizatio
 
         # 8. Rebuild the text
         processed_text = " ".join(tokens)
-
         programme_dict[key] = processed_text
+        summarized_programme_dict[key] = summ_text
 
-    return programme_dict
+    return programme_dict, summarized_programme_dict
 
 
-def build_programme_data(programme_dict, do_stemming=False, do_lemmatization=False):
+def build_programme_data(programme_dict,name, do_stemming=False, do_lemmatization=False):
     """Build a processed programme data object from raw programme data."""
     # Step 1: Normalize structure and texts
-    normalized = normalize_text_fields(normalize_programme_entry(programme_dict))
+
+    normalized = normalize_programme_entry(programme_dict)
+    normalized = normalize_text_fields(normalized)
+
 
 
     # print(f"Normalized programme data: {normalized}")
@@ -174,7 +211,7 @@ def build_programme_data(programme_dict, do_stemming=False, do_lemmatization=Fal
     # preprocessed_text = " ".join(str(v) for v in normalized.values() if isinstance(v, str))
 
     # Step 3: Complete preprocessing
-    postprocessed_dict = preprocess_programme_text(normalized, do_stemming=do_stemming, do_lemmatization=do_lemmatization)
+    postprocessed_dict, summarized_dict = preprocess_programme_text(normalized,name, do_stemming=do_stemming, do_lemmatization=do_lemmatization)
 
     programme_name = extract_degree_name(normalized.get("programme_name"))
     
@@ -183,7 +220,7 @@ def build_programme_data(programme_dict, do_stemming=False, do_lemmatization=Fal
         "programme_name": programme_name
     }
 
-    return postprocessed_dict
+    return postprocessed_dict, summarized_dict
 
 
 def main():
@@ -195,20 +232,28 @@ def main():
 
         processed_programmes = {}
 
+        summarized_programmes = {}
+
         print(f"Processing {len(programmes)} programmes...")
         
         # Process all programmes
         for programme_name, programme_data in programmes.items():
                 
-            processed= build_programme_data(programme_data, do_stemming=False, do_lemmatization=True)
+            processed, summ= build_programme_data(programme_data, name=programme_name, do_stemming=False, do_lemmatization=False)
             processed_programmes[programme_name] = processed
+            summarized_programmes[programme_name] = summ
+
         
         # Save the processed output to a new JSON file
         output_file = "data/processed_programmes.json"
+        summarized_output_file = "data/summarized_programmes.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(processed_programmes, f, indent=2, ensure_ascii=False)
+        with open(summarized_output_file, "w", encoding="utf-8") as f:
+            json.dump(summarized_programmes, f, indent=2, ensure_ascii=False)
 
         print(f"✅ Processed {len(processed_programmes)} programmes and saved to '{output_file}'")
+        print(f"✅ Summarized {len(summarized_programmes)} programmes and saved to '{summarized_output_file}'")
         
     except FileNotFoundError:
         print("❌ Error: Could not find input file 'all_programmes_info.json'")
