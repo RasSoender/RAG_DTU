@@ -42,26 +42,41 @@ def merge_files(normal, summarized):
     return merged
 
 
+import json
+import re
+import string
+
 def process_programme(json_file_path, json_summarized_path, use_postprocessed=True):
     """
-    Processes a JSON file with programme entries, generating embeddings for each programme.
-    Embeddings are stored directly under the programme, with a 'metadata' dict containing
-    field-level metadata for each field.
+    Processes JSON files with programme entries, merges them, and generates embeddings for each field.
+    For each programme, the output dictionary has the following structure:
     
-    Returns a dictionary with programme names as keys and all embeddings + metadata.
+    {
+      "Applied Chemistry": {
+          "programme_specification": [ ... ],   # embedding for that field
+          "duration": [ ... ],
+          "admission_requirements": [ ... ],
+          ... (other fields) ...,
+          "name_embedding": [ ... ],            # embedding for the programme name
+          "metadata": {"course_name": "Applied Chemistry"}
+      },
+      "Other Subject": { ... }
+    }
+    
+    Each non-empty string field in the merged programme data is embedded using get_embedding().
+    The programme name itself is embedded using get_name_embedding().
     """
-    import json
-
+    # Load the raw and summarized JSON data
     with open(json_file_path, "r", encoding="utf-8") as f:
         programmes = json.load(f)
 
     with open(json_summarized_path, "r", encoding="utf-8") as f:
         summarized_programmes = json.load(f)
 
-    # Merge the two JSON files
+    # Merge the two JSON files (assuming merge_files is defined)
     merged_programmes = merge_files(programmes, summarized_programmes)
 
-    # Save the merged data
+    # Optionally, save the merged data for inspection
     with open("data/merged_programmes.json", "w", encoding="utf-8") as f:
         json.dump(merged_programmes, f, indent=2)
 
@@ -69,24 +84,36 @@ def process_programme(json_file_path, json_summarized_path, use_postprocessed=Tr
     for programme_name, data in merged_programmes.items():
         print(f"Processing programme: {programme_name}")
 
-        # Initialize container for this programme
-        programme_entry = {
-            "name_embedding": get_name_embedding(programme_name),
-            "metadata": {}
-        }
+        # Initialize the nested dictionary for this programme.
+        programme_entry = {}
 
+        # Process each field in the merged programme data
         for key, value in data.items():
-            if isinstance(value, str) and value.strip() != "" and key != "metadata":
-                field_embedding = get_embedding(value)
-                programme_entry[key] = field_embedding
-                programme_entry["metadata"][key] = {
-                    "programme_name": programme_name
-                }
+            # Skip if the value is not a non-empty string.
+            if key == "programme_name": 
+                # Skip the programme name field itself, as we'll handle it separately.
+                continue
+            if isinstance(value, str) and value.strip() != "":
+                # Optionally, you could perform preprocessing on the text here (e.g., lowercasing, punctuation removal)
+                # For example:
+                
+                # Generate an embedding for this field.
+                programme_entry[key] = get_embedding(value)
+        
+        # Add the specialised name embedding for the programme name.
+        programme_entry["name_embedding"] = get_name_embedding(data["programme_name"])
+        
+        # Include a metadata dict with only the course name.
+        programme_entry["metadata"] = {"course_name": programme_name}
 
         embeddings[programme_name] = programme_entry
         print(f"Processed: {programme_name}")
 
     return embeddings
+
+# Example usage:
+# embeddings = process_programme("programmes.json", "summarized_programmes.json")
+# The resulting embeddings dict will have a nested structure where each field's embedding is stored.
 
 
 

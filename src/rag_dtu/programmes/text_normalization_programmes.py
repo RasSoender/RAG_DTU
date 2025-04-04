@@ -21,6 +21,8 @@ FIELDS_TO_SKIP = [
 ]
 
 
+
+
 def to_snake_case(s):
     """Convert a string to snake_case format."""
     s = s.strip().lower()
@@ -259,6 +261,46 @@ def main():
         print("❌ Error: Could not find input file 'all_programmes_info.json'")
     except json.JSONDecodeError:
         print("❌ Error: Invalid JSON format in input file")
+
+def normalize_query(query, do_stemming=False, do_lemmatization=False, remove_stopwords=False):
+    """
+    Normalize and preprocess a search query for consistent text matching.
+    
+    Args:
+        query (str): The input search query to normalize
+        do_stemming (bool): Whether to apply Porter stemming
+        do_lemmatization (bool): Whether to apply WordNet lemmatization
+        remove_stopwords (bool): Whether to remove English stopwords
+    
+    Returns:
+        tuple: (normalized query string, list of tokens)
+    """
+    # 1. Lowercase
+    text = query.lower()
+
+    # 2. Remove punctuation
+    text = re.sub(f"[{re.escape(string.punctuation)}]", " ", text)
+
+    # 3. Tokenization
+    tokens = word_tokenize(text)
+
+    # 4. Optional stopwords removal
+    if remove_stopwords:
+        tokens = [word for word in tokens if word not in stop_words and word.isalpha()]
+
+    # 5. Stemming / Lemmatization
+    if do_stemming and not do_lemmatization:
+        tokens = [stemmer.stem(word) for word in tokens]
+    elif do_lemmatization and not do_stemming:
+        tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    elif do_stemming and do_lemmatization:
+        # First lemmatization, then stemming
+        tokens = [stemmer.stem(lemmatizer.lemmatize(word)) for word in tokens]
+
+    # 6. Rebuild the text
+    normalized_query = " ".join(tokens)
+
+    return normalized_query, tokens
 
 
 if __name__ == "__main__":
