@@ -39,16 +39,34 @@ def saving_into_json(scraped_info):
     os.makedirs("data_courses", exist_ok=True)
     
     course_no = scraped_info["course title"][:5]
-    with open(f"data/data_courses/{course_no}.json", "w", encoding="utf-8") as f:
+    with open(f"data/data_courses_analyzer/{course_no}.json", "w", encoding="utf-8") as f:
         json.dump(scraped_info, f, ensure_ascii=False, indent=4)
         print(f"JSON file saved successfully for {course_no}!")
-    return None
 
 def scraping_elements(driver, scraped_info):
-    xpath = f"//div[@class='container']//section//div[@class='col'][{i}]//div[@class='card h-100']/a"
-    
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][1]//tr[5]//td"
+    signups = scrape_text(driver, xpath)
+    scraped_info["signups"] = signups
 
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][2]//table[2]//tr[1]//td"
+    average_grade = scrape_text(driver, xpath)
+    scraped_info["average grade"] = average_grade
 
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][2]//table[2]//tr[2]//td"
+    failed_students = scrape_text(driver, xpath)
+    scraped_info["failed students in percent"] = failed_students
+
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][3]//tr[1]//td"
+    workload_burden = scrape_text(driver, xpath)
+    scraped_info["workload burden"] = workload_burden
+
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][3]//tr[2]//td"
+    overworked_students = scrape_text(driver, xpath)
+    scraped_info["overworked students in percent"] = overworked_students
+
+    xpath = f"//div[@class='container']//div[@class='col']//li[@class='list-group-item'][4]//tr[1]//td"
+    average_rating = scrape_text(driver, xpath)
+    scraped_info["average rating"] = average_rating
 
     return scraped_info
 
@@ -82,7 +100,7 @@ def process_url(url, index):
         scraped_info = scraping_elements(driver, scraped_info)
 
         # Save results
-        #saving_into_json(scraped_info)
+        saving_into_json(scraped_info)
         
         driver.quit()
         return True
@@ -98,7 +116,7 @@ def main():
     course_urls = [data.get("course_analyzer_urls", [])]
   
     start_index = 0
-    urls_to_process = course_urls[start_index:]
+    urls_to_process = course_urls[0][start_index:]
     
     # Process URLs in parallel (adjust max_workers as needed)
     max_workers = 4  # Limit concurrent browsers to avoid memory issues
