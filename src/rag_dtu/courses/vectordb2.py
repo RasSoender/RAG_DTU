@@ -149,6 +149,36 @@ def create_weaviate_schema():
                 name="exam",
                 data_type=DataType.TEXT,
                 description="Dtes of exam of the course"
+            ),
+            Property(
+                name="signups",
+                data_type=DataType.TEXT,
+                description="Number of signups for the course"
+            ),
+            Property(
+                name="average_grade",
+                data_type=DataType.TEXT,
+                description="Average grade of the course"
+            ),
+            Property(
+                name="failed_students_in_percent",
+                data_type=DataType.TEXT,
+                description="Percentage of students who failed the course"
+            ),
+            Property(
+                name="workload_burden",
+                data_type=DataType.TEXT,
+                description="Workload burden of the course"
+            ),
+            Property(
+                name="overworked_students_in_percent",
+                data_type=DataType.TEXT,
+                description="Percentage of overworked students in the course"
+            ),
+            Property(
+                name="average_rating",
+                data_type=DataType.TEXT,
+                description="Average rating of the course"
             )
         ]
     )
@@ -183,8 +213,12 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         exam = course_meta.get('exam', '')
         ects = str(course_meta.get('ects', ''))
         schedule = course_meta.get('schedule', '')
-
-
+        signups = str(course_meta.get('signups', ''))
+        average_grade = str(course_meta.get('average_grade', ''))
+        failed_students = str(course_meta.get('failed_students_in_percent', ''))
+        workload_burden = str(course_meta.get('workload_burden', ''))
+        overworked_students = str(course_meta.get('overworked_students_in_percent', ''))
+        average_rating = str(course_meta.get('average_rating', ''))
 
         proper_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, course_id))
         
@@ -197,7 +231,13 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
                 "semester": semester_str,
                 "exam": exam,
                 "schedule": schedule,
-                "ects": ects
+                "ects": ects,
+                "signups": signups,
+                "average_grade": average_grade,
+                "failed_students_in_percent": failed_students,
+                "workload_burden": workload_burden,
+                "overworked_students_in_percent": overworked_students,
+                "average_rating": average_rating
             },
             uuid=proper_uuid,
             vector= {
@@ -313,6 +353,12 @@ def query_with_gpt4(user_query, courses_info):
         ects = course.get("ects", "N/A"),
         schedule = course.get("schedule", "N/A"),
         exam = course.get("exam", "N/A"),
+        signups = course.get("signups", "N/A"),
+        average_grade = course.get("average_grade", "N/A"),
+        failed_students = course.get("failed_students_in_percent", "N/A"),
+        workload_burden = course.get("workload_burden", "N/A"),
+        overworked_students = course.get("overworked_students_in_percent", "N/A"),
+        average_rating = course.get("average_rating", "N/A"),
 
         context_lines.append(
             f"Course Code: {course_code}\n"
@@ -321,7 +367,13 @@ def query_with_gpt4(user_query, courses_info):
             f"Semester: {semester}\n"
             f"Schedule: {schedule}\n"
             f"Exam Date: {exam}\n"
-            f"Details: {preprocessed_text}"
+            f"Details: {preprocessed_text}\n"
+            f"Signups: {signups}\n"
+            f"Average Grade: {average_grade}\n"
+            f"Failed Students: {failed_students}\n"
+            f"Workload Burden: {workload_burden}\n"
+            f"Overworked Students: {overworked_students}\n"
+            f"Average Rating: {average_rating}\n"
         )
 
     context_str = "\n\n---\n\n".join(context_lines)
@@ -437,6 +489,13 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             ects = course.get("ects", "N/A")
             schedule = course.get("schedule", "N/A")
             exam = course.get("exam", "N/A")
+            signups = course.get("signups", "N/A")
+            average_grade = course.get("average_grade", "N/A")
+            failed_students = course.get("failed_students_in_percent", "N/A")
+            workload_burden = course.get("workload_burden", "N/A")
+            overworked_students = course.get("overworked_students_in_percent", "N/A")
+            average_rating = course.get("average_rating", "N/A")
+
             # Format the course information
             retrieved_courses_str += f"Course Code: {course_code}\n"
             retrieved_courses_str += f"Title: {course_name}\n"
@@ -444,6 +503,12 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             retrieved_courses_str += f"Semester: {semester}\n"
             retrieved_courses_str += f"Schedule: {schedule}\n"
             retrieved_courses_str += f"Exam Date: {exam}\n"
+            retrieved_courses_str += f"Signups: {signups}\n"
+            retrieved_courses_str += f"Average Grade: {average_grade}\n"
+            retrieved_courses_str += f"Failed Students: {failed_students}\n"
+            retrieved_courses_str += f"Workload Burden: {workload_burden}\n"
+            retrieved_courses_str += f"Overworked Students: {overworked_students}\n"
+            retrieved_courses_str += f"Average Rating: {average_rating}\n"
             retrieved_courses_str += f"Details: {content}\n\n"
             retrieved_courses_str += "---\n\n"
         
