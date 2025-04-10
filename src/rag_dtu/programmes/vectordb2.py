@@ -255,9 +255,17 @@ def check_weaviate_courses():
     """
     try:
         collections = weaviate_client.collections.list_all()
+        programmes_exists = False
+        
         for collection in collections:
             if collection == "Programmes":
                 print("Programmes collection already exists")
+                programmes_exists = True
+                break
+        
+        if not programmes_exists:
+            print("Programmes collection does not exist")
+            return False
             
         # Check if collection has data
         course_collection = weaviate_client.collections.get("Programmes")
@@ -266,8 +274,11 @@ def check_weaviate_courses():
         )
         
         if len(response.objects) > 0:
+            print("Collection has data")
             return True
-        return False
+        else:
+            print("Collection exists but has no data")
+            return False
     except Exception as e:
         print(f"Error checking Weaviate courses: {e}")
         return False
@@ -276,6 +287,7 @@ def check_weaviate_courses():
 def search_courses(query, top_k=3):
     """
     Search for courses using Weaviate with hybrid search across all vector fields
+    and identify the most relevant field for each result
     """
     course_collection = weaviate_client.collections.get("Programmes")
     
@@ -315,30 +327,77 @@ def search_courses(query, top_k=3):
     }
     
     # Define target vectors with equal weights
-    # Distribute weight across all vectors with slight emphasis on name_embedding
     vector_count = len(vector_query)
-    name_weight = 20  # Give more weight to the name
-    regular_weight = (100 - name_weight) / (vector_count - 1)  # Distribute remaining weight
+    name_weight = 20
+    regular_weight = (100 - name_weight) / (vector_count - 1)
     
     weights = {field: regular_weight for field in vector_query.keys()}
-    weights["name_embedding"] = name_weight  # Override with higher weight for name
+    weights["name_embedding"] = name_weight
     
-    # Perform hybrid search using all vectors
     try:
+        # First get overall results
         response = course_collection.query.hybrid(
             query=query,
-            alpha=0.75,  # Blend between vector and keyword search
+            alpha=0.75,
             vector=vector_query,
             limit=top_k,
             target_vector=TargetVectors.manual_weights(weights),
             return_metadata=MetadataQuery(distance=True)
         )
-
+        
+        results = []
+        
         if len(response.objects) > 0:
-            return [obj for obj in response.objects]
+            # For each result, calculate which field contributed most to the match
+            for obj in response.objects:
+                # Since we can't individually query fields after the fact, use field names to infer relevance
+                # Based on query keywords and field names
+                query_terms = set(query.lower().split())
+                field_relevance = {}
+                
+                for field_name in vector_query.keys():
+                    # Skip name_embedding since it's specialized
+                    if field_name == "name_embedding":
+                        continue
+                    
+                    # Calculate a simple relevance score based on query term overlap with field name
+                    field_terms = set(field_name.replace("_", " ").lower().split())
+                    overlap = len(query_terms.intersection(field_terms))
+                    
+                    # Some fields are more likely to be relevant for specific question types
+                    bonus = 0
+                    if "who" in query_terms and field_name == "head_of_study":
+                        bonus = 3
+                    elif "how long" in query and field_name == "duration":
+                        bonus = 3
+                    elif "requirement" in query_terms and "requirements" in field_name:
+                        bonus = 2
+                    elif "admit" in query_terms and "admission" in field_name:
+                        bonus = 2
+                    
+                    field_relevance[field_name] = overlap + bonus
+                
+                # Select top 3 fields by relevance
+                sorted_fields = sorted(field_relevance.items(), key=lambda x: -x[1])
+                top_fields = sorted_fields[:3] if len(sorted_fields) >= 3 else sorted_fields
+                
+                # Normalize scores to a 0-1 range if any non-zero scores exist
+                max_score = max([score for _, score in top_fields], default=1)
+                if max_score > 0:
+                    relevant_fields = [(field, min(score/max_score, 1.0)) for field, score in top_fields]
+                else:
+                    # If all scores are 0, just use equal weights
+                    relevant_fields = [(field, 0.5) for field, _ in top_fields]
+                
+                results.append({
+                    "properties": obj.properties,
+                    "relevant_fields": relevant_fields
+                })
+                
+            return results
     except Exception as e:
         print(f"Error during hybrid search: {e}")
-        # Try a simpler approach if there's an error
+        # Fallback with simpler search
         try:
             print("Trying simplified search...")
             response = course_collection.query.hybrid(
@@ -349,12 +408,11 @@ def search_courses(query, top_k=3):
                 return_metadata=MetadataQuery(distance=True)
             )
             if len(response.objects) > 0:
-                return [obj.properties for obj in response.objects]
+                return [{"properties": obj.properties, "relevant_fields": []} for obj in response.objects]
         except Exception as e2:
             print(f"Error during simplified search: {e2}")
-
+    
     return []
-
 
 
 def interactive_chat():
@@ -373,7 +431,7 @@ def interactive_chat():
     
     while True:
         # Get user query
-        user_query = "How does it work the master thesis for the master's programme in Human Centered AI?"
+        user_query = input("\nYour question: ")
         
         # Exit condition
         if user_query.lower() in ["exit", "quit", "bye"]:
@@ -385,41 +443,65 @@ def interactive_chat():
         
         # Search for relevant courses
         print("Searching for relevant programmes...")
-        retrieved_courses = search_courses(normalized_query, top_k=3)
+        retrieved_results = search_courses(normalized_query, top_k=3)
         
-        if not retrieved_courses:
+        if not retrieved_results:
             print("Sorry, I couldn't find any relevant programmes.")
             continue
         
         # Format retrieved information
+        retrieved_info_str = ""
         
-        print(retrieved_courses)
+        print("\nRelevant programmes found:")
+        for i, result in enumerate(retrieved_results, 1):
+            course_name = result["properties"].get("course_name", "Unknown Programme")
+            relevant_fields = result["relevant_fields"]
+            
+            print(f"{i}. {course_name}")
+            if relevant_fields:
+                print("   Most relevant information categories:")
+                for field, score in relevant_fields:
+                    # Format field name for better readability
+                    readable_field = field.replace("_", " ").title()
+                    print(f"   - {readable_field} (Relevance: {score:.2f})")
+                
+                # Add to the retrieved info string for conversation history
+                retrieved_info_str += f"Programme: {course_name}\n"
+                retrieved_info_str += f"Relevant sections: {', '.join(field for field, _ in relevant_fields)}\n\n"
+            else:
+                print("   No specific field relevance information available")
         
         # Get more details about specific course if user wants
         print("\nWould you like more details about any of these programmes? (Enter number or 'no')")
         choice = input()
         
-        if choice.lower() != 'no' and choice.isdigit() and 1 <= int(choice) <= len(retrieved_courses):
+        if choice.lower() != 'no' and choice.isdigit() and 1 <= int(choice) <= len(retrieved_results):
             idx = int(choice) - 1
-            selected_course = retrieved_courses[idx]
+            selected_course = retrieved_results[idx]["properties"]
             course_name = selected_course.get("course_name", "Unknown Programme")
+            relevant_fields = retrieved_results[idx]["relevant_fields"]
             
-            # Simple message with programme details
-            message = f"Details for {course_name}:\n"
-            message += f"This is a master's programme at DTU."
-            
-            print(message)
+            print(f"\nDetails for {course_name}:")
+            if relevant_fields:
+                print(f"Based on your query, you might be interested in these sections:")
+                for field, score in relevant_fields:
+                    readable_field = field.replace("_", " ").title()
+                    print(f"- {readable_field}")
+                    
+                # Suggest follow-up query based on top field
+                top_field = relevant_fields[0][0].replace("_", " ")
+                print(f"\nYou can ask for specific details about the {top_field} for this programme.")
+            else:
+                print("This is a master's programme at DTU.")
         
         # Update conversation history for context
         update_conversation_history(user_query, retrieved_info_str)
-
+        
 if __name__ == "__main__":
     # Load processed courses from JSON file
     with open("data/programme_embeddings.json", "r", encoding="utf-8") as f:
         processed_courses = json.load(f)
     
-    # Import courses to Weaviate
-    import_courses_to_weaviate(processed_courses)
 
     interactive_chat()
     weaviate_client.close()
