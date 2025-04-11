@@ -243,13 +243,14 @@ def search_chunks(query, top_k=5, filter_course=None):
     
     # Define target vectors with weights (giving more weight to content)
     weights = {
-        "name_embedding": 70,  # 30% weight to name matches
-        "content_embedding": 30  # 70% weight to content matches
+        "name_embedding": 30,  # 30% weight to name matches
+        "content_embedding": 70  # 70% weight to content matches
     }
     
     # Set up filter for applied_chemistry if requested
     filter_obj = None
     if filter_course:
+        print(f"Filtering by course: {filter_course}")
         filter_obj = Filter.by_property("course_name").equal(filter_course)
     
     try:
@@ -286,32 +287,103 @@ def search_chunks(query, top_k=5, filter_course=None):
     except Exception as e:
         print(f"Error during hybrid search: {e}")
         # Fallback with simpler search
-        try:
-            print("Trying simplified search...")
-            # Include filter in simplified search too
-            response = chunk_collection.query.hybrid(
-                query=query,
-                alpha=0.75,
-                vector={"content_embedding": content_embedding},  # Just use content embedding
-                limit=top_k,
-                return_metadata=MetadataQuery(distance=True),
-                return_properties=["course_name", "chunk_name", "chunk_content"],
-                filters=filter_obj
-            )
-            
-            if len(response.objects) > 0:
-                return [{
-                    "course_name": obj.properties.get("course_name", "Unknown Course"),
-                    "chunk_name": obj.properties.get("chunk_name", "Unknown Chunk"),
-                    "chunk_content": obj.properties.get("chunk_content", ""),
-                    "distance": obj.metadata.distance if hasattr(obj, 'metadata') else None
-                } for obj in response.objects]
-        except Exception as e2:
-            print(f"Error during simplified search: {e2}")
-    
     return []
 
-def interactive_chat():
+
+def query_with_gpt4(user_query, programmes_info):
+    """
+    Constructs a prompt using the courses' preprocessed information,
+    conversation history, and the user query, then uses GPT-4 to generate an answer.
+    Returns both the answer and the prompt used.
+    """
+    # Build conversation history context
+    history_context = build_history_context()
+    
+    # Build course info context string
+    context_lines = []
+    for information in programmes_info:
+        course_name = information.get("course_name", "N/A")
+        chunk_name = information.get("chunk_name", "Unnamed Course")
+        chunk_content = information.get("chunk_content", "")
+
+        context_lines.append(
+            f"Master's programme name: {course_name}\n"
+            f"Chunk name: {chunk_name}\n"
+            f"Chunk content: {chunk_content}\n"
+        )
+    context_str = "\n\n---\n\n".join(context_lines)
+    
+    # Build the prompt using detailed sections
+    prompt = f"""
+You are a highly knowledgeable and polite academic assistant with expertise in all DTUMaster's programme. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU Master's programme. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
+
+---
+
+### 1. **User Query:**
+- This is the most recent request from the user.
+- If the query does **not include a **master's programme name** or something related to the course, it could be a signal that the answer is in the conversation history.
+
+User Query:
+{user_query}
+
+---
+
+### 2. **Master Information:**
+- This section contains official and detailed data retrived about DTU Master's programme.
+- First, try to match the user query with information in this section, but if the user do not provide any programme name or in the query, try firstly to figure out if it is referring to the past query, that is in the conversation history.
+- It is important that there is a lot of text so it is important that you look in all the part of the text, tryin to capture the information
+
+Course Information:
+{context_str}
+
+---
+
+### 3. **Conversation History:**
+- This includes recent exchanges between the user and the assistant.
+-You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query informations.
+- If master's programme information is unclear or missing in the query, use this section to infer context from previous user questions or previously retrieved master's programme data.
+
+Conversation History:
+{history_context}
+
+---
+
+### ✅ **Your Task:**
+1. **Interpret the User Query:**
+   - If the programme name is clearly mentioned, probably you can find the relevant details from the Master information section and answer accordingly.
+   - If not, do not be creative, firstly check the conversation history for figuring out if the present query {user_query} is connected to the last query and so you can find information in the conversation history, otherwise simply ask more information.
+
+2. **Fallback on History:**
+   - If a course information is not found in Master Information, check the Conversation History for a reference to the master's programme or topic, mostly in the previous query.
+
+3. **Ask for Clarification (if needed):**
+   - If the information cannot be determined from either Course Information or Conversation History, reply in a friendly and polite tone:
+     > _"I'm currently unable to identify the Master's programme. Could you kindly include the programme name so I can help more effectively?"_
+
+---
+
+### ✅ **Response Style:**
+- Speak **in first person**, as if personally giving suggestions or guidance.
+- Always respond in **markdown** format.
+- Be **factual**, **concise**, and **professional**.
+- Avoid showing internal logic or thought process — just speak naturally and helpfully.
+
+---
+"""
+    
+    response = client.chat.completions.create(
+        model="gpt-4o-mini-2024-07-18",
+        messages=[
+            {"role": "system", "content": "You are an expert academic advisor specialized in helping Master's students of Denmark University to find information regarding their courses."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.3
+    )
+    answer = response.choices[0].message.content
+    return answer, prompt
+
+
+def interactive_chat(processed_embedding_path, processed_courses_path):
     """
     Run an interactive chat session that allows testing the chunk retrieval system.
     """
@@ -319,15 +391,18 @@ def interactive_chat():
     print("Ask me anything about DTU master's programmes. Type 'exit' to quit.\n")
     
     # Check if chunks exist in Weaviate
-    if not check_weaviate_chunks():
-        print("No chunks found in Weaviate. Please make sure chunks are imported first.")
-        return
-    else:
-        print("Chunks found in Weaviate, ready to query.")
+    with open(processed_courses_path, "r", encoding="utf-8") as f:
+        processed_courses = json.load(f)
     
-    # Set the filter to Applied Chemistry
-    applied_chemistry_filter = "Applied Chemistry"
-    print(f"Filtering results to only show information about: {applied_chemistry_filter}")
+    with open(processed_embedding_path, "r", encoding="utf-8") as f:
+        processed_embeddings = json.load(f)
+    
+    # Check if courses are in Weaviate, import if not
+    if not check_weaviate_chunks():
+        print("Importing courses to Weaviate...")
+        import_chunks_to_weaviate(processed_embeddings, processed_courses)
+        print("Courses imported successfully.")
+    
     
     while True:
         # Get user query
@@ -340,13 +415,15 @@ def interactive_chat():
         
         # Normalize the query
         normalized_query, _ = normalize_query(user_query)
-        
+
+        filter = "Business_Analytics"
+
         # Search for relevant chunks with filter
         print("Searching for relevant information...")
-        retrieved_results = search_chunks(normalized_query, top_k=5, filter_course=applied_chemistry_filter)
+        retrieved_results = search_chunks(normalized_query, top_k=5, filter_course=filter)
         
         if not retrieved_results:
-            print("Sorry, I couldn't find any relevant information about Applied Chemistry.")
+            print("Sorry, I couldn't find any relevant information about what you asked.")
             continue
         
         
@@ -355,59 +432,30 @@ def interactive_chat():
         
         print("\nRelevant information found:")
         for i, result in enumerate(retrieved_results, 1):
+            print(f"Result {i}:")
+            print(f"Course Name: {result['course_name']}")
+            print(f"Chunk Name: {result['chunk_name']}")
             course_name = result["course_name"]
             chunk_name = result["chunk_name"]
             chunk_content = result["chunk_content"]
-            distance = result.get("distance", None)
-            
-            print(f"{i}. {course_name} - {chunk_name}")
-            if distance is not None:
-                print(f"   Relevance score: {1 - distance:.2f}")
-            
-            # Preview of content (first 100 characters)
-            content_preview = chunk_content[:100] + "..." if len(chunk_content) > 100 else chunk_content
-            print(f"   Preview: {content_preview}")
             
             # Add to the retrieved info string for conversation history
             retrieved_info_str += f"Programme: {course_name}\n"
             retrieved_info_str += f"Section: {chunk_name}\n\n"
+            retrieved_info_str += f"Chunk content: {chunk_content}\n\n"
         
-        # Get more details about specific chunk if user wants
-        print("\nWould you like more details about any of these sections? (Enter number or 'no')")
-        choice = input()
-        
-        if choice.lower() != 'no' and choice.isdigit() and 1 <= int(choice) <= len(retrieved_results):
-            idx = int(choice) - 1
-            selected_chunk = retrieved_results[idx]
-            course_name = selected_chunk["course_name"]
-            chunk_name = selected_chunk["chunk_name"]
-            chunk_content = selected_chunk["chunk_content"]
-            
-            print(f"\nDetails for {course_name} - {chunk_name}:")
-            print(chunk_content)
-            
-            # Suggest related chunks
-            readable_chunk_name = chunk_name.replace("_", " ").title()
-            print(f"\nYou can ask more specific questions about {readable_chunk_name} for {course_name}.")
-        
+        answer, _ = query_with_gpt4(user_query, retrieved_results)
+        print("\n 🧠 Assistant 🧠:")
+        display_markdown(answer)
+        print("\n---\n")
         # Update conversation history for context
         update_conversation_history(user_query, retrieved_info_str)
         
 if __name__ == "__main__":
     # Load chunked embeddings from JSON file
-    with open("data/chunked_programme_embeddings.json", "r", encoding="utf-8") as f:
-        chunked_embeddings = json.load(f)
-    
-    # Optionally load the original processed programmes for content if needed
-    try:
-        with open("data/processed_programmes.json", "r", encoding="utf-8") as f:
-            processed_programmes = json.load(f)
-    except FileNotFoundError:
-        processed_programmes = None
-        print("Merged programmes file not found. Will proceed without chunk content.")
     
     # Uncomment to import chunks to Weaviate
-    # import_chunks_to_weaviate(chunked_embeddings, processed_programmes)
+    #import_chunks_to_weaviate(chunked_embeddings, processed_programmes)
     
-    interactive_chat()
+    interactive_chat("data/chunked_programme_embeddings.json", "data/processed_programmes.json")
     weaviate_client.close()
