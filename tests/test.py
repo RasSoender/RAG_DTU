@@ -27,5 +27,5 @@ headers={'X-OpenAI-Api-key': os.getenv("OPENAI_API_KEY")}  # Replace with your O
 
 
 weaviate_client.collections.delete("Course")
-
-    
+print("Collection 'Course' deleted.")
+weaviate_client.close()
