@@ -382,10 +382,68 @@ Conversation History:
     answer = response.choices[0].message.content
     return answer, prompt
 
+def get_available_programmes():
+    """
+    Get the list of available master's programmes from Weaviate.
+    Returns a list of unique programme names.
+    """
+    try:
+        chunk_collection = weaviate_client.collections.get("Chunk")
+        response = chunk_collection.query.fetch_objects(
+            limit=10000,  # Use a large limit to get all programmes
+            return_properties=["course_name"]
+        )
+        
+        programmes = set()
+        for obj in response.objects:
+            if "course_name" in obj.properties:
+                programmes.add(obj.properties["course_name"])
+        
+        return sorted(list(programmes))
+    except Exception as e:
+        print(f"Error fetching available programmes: {e}")
+        return ["Business_Analytics"]  # Fallback to default programme
+
+
+def select_programme(available_programmes):
+    """
+    Present user with a menu to select a master's programme.
+    Returns the selected programme name.
+    """
+    print("\nAvailable Master's Programmes:")
+    print("0. All Programmes")
+    
+    for i, programme in enumerate(available_programmes, 1):
+        print(f"{i}. {programme.replace('_', ' ')}")
+    
+    while True:
+        try:
+            choice = input("\nSelect a programme number (0 for All): ")
+            
+            # Check if user wants to exit programme selection
+            if choice.lower() in ["exit", "quit", "cancel"]:
+                return "All Programmes"
+            
+            choice_num = int(choice)
+            
+            if choice_num == 0:
+                print("\nSelected: All Programmes")
+                return "All Programmes"
+            elif 1 <= choice_num <= len(available_programmes):
+                selected = available_programmes[choice_num - 1]
+                print(f"\nSelected: {selected.replace('_', ' ')}")
+                return selected
+            else:
+                print("Invalid selection. Please try again.")
+        except ValueError:
+            print("Please enter a valid number.")
+            
+
 
 def interactive_chat(processed_embedding_path, processed_courses_path):
     """
     Run an interactive chat session that allows testing the chunk retrieval system.
+    Users can select a specific master's programme to filter their queries.
     """
     print("Welcome to the DTU Course Assistant!")
     print("Ask me anything about DTU master's programmes. Type 'exit' to quit.\n")
@@ -403,7 +461,13 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
         import_chunks_to_weaviate(processed_embeddings, processed_courses)
         print("Courses imported successfully.")
     
+    # Get available master's programmes
+    available_programmes = get_available_programmes()
     
+    # Let the user select a master's programme
+    selected_programme = select_programme(available_programmes)
+    
+    # Main chat loop
     while True:
         # Get user query
         user_query = input("\nYour question: ")
@@ -413,19 +477,24 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             print("Thanks for chatting! Goodbye!")
             break
         
+        # Change programme selection
+        if user_query.lower() in ["change programme", "switch programme", "select programme"]:
+            selected_programme = select_programme(available_programmes)
+            continue
+        
         # Normalize the query
         normalized_query, _ = normalize_query(user_query)
 
-        filter = "Business_Analytics"
-
+        # Use the selected programme as filter
+        filter_course = selected_programme if selected_programme != "All Programmes" else None
+        
         # Search for relevant chunks with filter
         print("Searching for relevant information...")
-        retrieved_results = search_chunks(normalized_query, top_k=5, filter_course=filter)
+        retrieved_results = search_chunks(normalized_query, top_k=5, filter_course=filter_course)
         
         if not retrieved_results:
             print("Sorry, I couldn't find any relevant information about what you asked.")
             continue
-        
         
         # Format retrieved information
         retrieved_info_str = ""
@@ -450,6 +519,9 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
         print("\n---\n")
         # Update conversation history for context
         update_conversation_history(user_query, retrieved_info_str)
+
+
+
         
 if __name__ == "__main__":
     # Load chunked embeddings from JSON file

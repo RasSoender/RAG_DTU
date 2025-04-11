@@ -85,7 +85,8 @@ def process_programme_chunks(json_file_path, json_summarized_path):
             # Skip if the field is not a non-empty string
             if not isinstance(field_content, str) or field_content.strip() == "":
                 continue
-                
+            if field_name == "programme_name":
+                continue
             # Create a unique identifier for this chunk
             chunk_id = f"chunk_{chunk_counter}"
             chunk_counter += 1
