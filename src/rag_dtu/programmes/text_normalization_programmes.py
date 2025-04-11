@@ -20,9 +20,6 @@ FIELDS_TO_SKIP = [
     "Exam rules", # skip for now because it is too long for one embedding
 ]
 
-
-
-
 def to_snake_case(s):
     """Convert a string to snake_case format."""
     s = s.strip().lower()
@@ -53,6 +50,41 @@ def extract_degree_name(text):
     
     print(f"❌ No match found in the text: {text}")
     return text  # Return the original text if no match
+
+def merge_curriculum_info(data):
+    """
+    Merge the values of 'programme_provision', 'specializations', and 'curriculum'
+    into a single key 'curriculum_info' in the given dictionary.
+    
+    The function concatenates the values (if available) and uses a newline as a separator.
+    After merging, the original keys are removed from the dictionary.
+    
+    Parameters:
+        data (dict): The input dictionary containing the keys.
+        
+    Returns:
+        dict: The updated dictionary with 'curriculum_info' and without the original keys.
+    """
+    keys_to_merge = ["programme_provision", "specializations", "curriculum"]
+    merged_values = []
+    
+    # Collect values from the keys to merge
+    for key in keys_to_merge:
+        value = data.get(key, "").strip()
+        if value:
+            merged_values.append(value)
+    
+    # Create the merged string with newlines as delimiters
+    merged_text = "\n".join(merged_values)
+    
+    # Assign the merged text to a new key 'curriculum_info'
+    data["curriculum_info"] = merged_text
+    
+    # Remove the original keys
+    for key in keys_to_merge:
+        data.pop(key, None)
+    
+    return data
     
 def normalize_programme_entry(entry):
     """Normalize programme entry structure."""
@@ -114,8 +146,6 @@ def normalize_programme_entry(entry):
 
 
     return normalized
-
-
 
 def normalize_text_fields(entry):
     """Normalize and clean text fields in a programme entry."""
@@ -205,6 +235,8 @@ def build_programme_data(programme_dict,name, do_stemming=False, do_lemmatizatio
 
     normalized = normalize_programme_entry(programme_dict)
     normalized = normalize_text_fields(normalized)
+    new_dict = merge_curriculum_info(normalized)
+
 
 
 
