@@ -79,6 +79,6 @@ if __name__ == "__main__":
 
     # Save the results to a JSON file for later use
     with open("data/course_embeddings.json", "w", encoding="utf-8") as f:
-        json.dump(course_embeddings, f)
+        json.dump(course_embeddings, f, indent=2)
 
     print("Content and specialized name embeddings have been generated and saved.")

@@ -5,7 +5,7 @@ from typing import List
 import json
 
 def save_to_file(title, result):
-    folder = "data_study_programmes"
+    folder = "data/data_study_programmes"
     filename = f"{folder}/{title.replace(' ', '_')}.json"
     with open(filename, "w", encoding="utf-8") as f:
         result_dict = {

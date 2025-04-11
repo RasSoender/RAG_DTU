@@ -87,7 +87,7 @@ def attach_exam_dates(entry, course_code, exam_map, reexam_map):
             break
 
     # Debug print
-    print(f"Schedule keys: {schedule_keys}")
+    # print(f"Schedule keys: {schedule_keys}")
 
     # Try course code
     exam = exam_map.get(course_code)
@@ -98,13 +98,13 @@ def attach_exam_dates(entry, course_code, exam_map, reexam_map):
         for sk in schedule_keys:
             if sk in exam_map:
                 exam = exam_map[sk]
-                print(f"Exam found via schedule key: {sk} → {exam}")
+                # print(f"Exam found via schedule key: {sk} → {exam}")
                 break
     if not reexam:
         for sk in schedule_keys:
             if sk in reexam_map:
                 reexam = reexam_map[sk]
-                print(f"Reexam found via schedule key: {sk} → {reexam}")
+                # print(f"Reexam found via schedule key: {sk} → {reexam}")
                 break
 
     # Update entry
@@ -218,13 +218,13 @@ def preprocess_course_text(course_dict, do_stemming=False, do_lemmatization=Fals
     return processed_text, len(tokens)
 
 
-def build_course_data(course_dict, exam_by_code, reexam_by_code, do_stemming=False, do_lemmatization=False):
+def build_course_data(course_dict, course_analyzer_data, exam_by_code, reexam_by_code, do_stemming=False, do_lemmatization=False):
     """Build a processed course data object from raw course data."""
     # Step 1: Normalize structure and texts
     normalized = normalize_text_fields(normalize_course_entry(course_dict, exam_by_code, reexam_by_code))
 
 
-    print(f"Normalized course data: {normalized}")
+    # print(f"Normalized course data: {normalized}")
     # Step 2: Build text before preprocessing (combine string values)
     preprocessed_text = " ".join(str(v) for v in normalized.values() if isinstance(v, str))
 
@@ -246,6 +246,13 @@ def build_course_data(course_dict, exam_by_code, reexam_by_code, do_stemming=Fal
             "ects": normalized.get("ects")
         }
     }
+
+    # Step 5: Add course analyzer data
+    if course_analyzer_data:
+        for key, value in course_analyzer_data.items():
+            if key == "course title":
+                continue  # Skip course title
+            result["metadata"][to_snake_case(key)] = value
 
     return result, token_count
 
@@ -299,11 +306,11 @@ def main():
         with open("data/exam_schedule_dtu.json", "r") as f:
             exam_data = json.load(f)
 
+        data_courses_analyzer_dir = "data/data_courses_analyzer/"
+
         exam_by_code = exam_data["EXAM_BY_CODE"]
         reexam_by_code = exam_data["REEXAM_BY_CODE"]
 
-        print(exam_by_code)
-            
         processed_courses = {}
         total_tokens = 0
 
@@ -311,11 +318,19 @@ def main():
         
         # Process all courses
         for course_key, course_data in courses.items():
+            print(f"Processing course: {course_key}")
+            
             # Skip courses with Danish content
             if "Engelsk titel" in course_data:
                 continue
+
+            try:
+                with open(data_courses_analyzer_dir + course_key + ".json", "r", encoding="utf-8") as f:
+                    course_analyzer_data = json.load(f)
+            except FileNotFoundError:
+                print(f"❌ Error: Could not find file for course {course_key}")
                 
-            processed, token_count = build_course_data(course_data, exam_by_code=exam_by_code, reexam_by_code=reexam_by_code, do_stemming=False, do_lemmatization=True)
+            processed, token_count = build_course_data(course_data, course_analyzer_data, exam_by_code=exam_by_code, reexam_by_code=reexam_by_code, do_stemming=False, do_lemmatization=True)
             total_tokens += token_count
             processed_courses[course_key] = processed
         
