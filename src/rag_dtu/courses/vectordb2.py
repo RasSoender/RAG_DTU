@@ -148,7 +148,12 @@ def create_weaviate_schema():
             Property(
                 name="exam",
                 data_type=DataType.TEXT,
-                description="Dtes of exam of the course"
+                description="Dates of exam of the course"
+            ),
+            Property(
+                name="re_exam",
+                data_type=DataType.TEXT,
+                description="Dates of re-exam of the course"
             ),
             Property(
                 name="signups",
@@ -211,6 +216,7 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         semester = course_meta.get('semester', '')
         semester_str = ", ".join(semester) if isinstance(semester, list) else str(semester)
         exam = course_meta.get('exam', '')
+        re_exam = course_meta.get('re_exam', '')
         ects = str(course_meta.get('ects', ''))
         schedule = course_meta.get('schedule', '')
         signups = str(course_meta.get('signups', ''))
@@ -230,6 +236,7 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
                 "content": content_text,
                 "semester": semester_str,
                 "exam": exam,
+                "re_exam": re_exam,
                 "schedule": schedule,
                 "ects": ects,
                 "signups": signups,
@@ -353,6 +360,7 @@ def query_with_gpt4(user_query, courses_info):
         ects = course.get("ects", "N/A"),
         schedule = course.get("schedule", "N/A"),
         exam = course.get("exam", "N/A"),
+        re_exam = course.get("re_exam", "N/A"),
         signups = course.get("signups", "N/A"),
         average_grade = course.get("average_grade", "N/A"),
         failed_students = course.get("failed_students_in_percent", "N/A"),
@@ -367,6 +375,7 @@ def query_with_gpt4(user_query, courses_info):
             f"Semester: {semester}\n"
             f"Schedule: {schedule}\n"
             f"Exam Date: {exam}\n"
+            f"Re-Exam Date: {re_exam}\n"
             f"Details: {preprocessed_text}\n"
             f"Signups: {signups}\n"
             f"Average Grade: {average_grade}\n"
@@ -375,7 +384,7 @@ def query_with_gpt4(user_query, courses_info):
             f"Overworked Students: {overworked_students}\n"
             f"Average Rating: {average_rating}\n"
         )
-
+        
     context_str = "\n\n---\n\n".join(context_lines)
     
     # Build the prompt using detailed sections
@@ -489,6 +498,7 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             ects = course.get("ects", "N/A")
             schedule = course.get("schedule", "N/A")
             exam = course.get("exam", "N/A")
+            re_exam = course.get("re_exam", "N/A")
             signups = course.get("signups", "N/A")
             average_grade = course.get("average_grade", "N/A")
             failed_students = course.get("failed_students_in_percent", "N/A")
@@ -503,6 +513,7 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             retrieved_courses_str += f"Semester: {semester}\n"
             retrieved_courses_str += f"Schedule: {schedule}\n"
             retrieved_courses_str += f"Exam Date: {exam}\n"
+            retrieved_courses_str += f"Re-Exam Date: {re_exam}\n"
             retrieved_courses_str += f"Signups: {signups}\n"
             retrieved_courses_str += f"Average Grade: {average_grade}\n"
             retrieved_courses_str += f"Failed Students: {failed_students}\n"
