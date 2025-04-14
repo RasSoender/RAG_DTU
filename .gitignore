@@ -1,2 +1,6 @@
 # Vector database
 data/vector_db/
+
+# Python cache
+__pycache__/
+*.py[cod]

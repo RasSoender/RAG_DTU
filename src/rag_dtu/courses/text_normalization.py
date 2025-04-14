@@ -57,59 +57,65 @@ def add_semester_info(entry):
 
 
 def attach_exam_dates(entry, course_code, exam_map, reexam_map):
-    # Extract schedule and exam-related text
-    schedule = entry.get("Schedule", "")
     examination = entry.get("Date of examination", "")
+    schedule = entry.get("Schedule", "")
 
     # Extract schedule codes from both fields
     def extract_schedule_keys(text):
         matches = re.findall(r'\b[FE]\d[-]?[AB]\b', text.upper())
         return [key.replace("-", "") for key in matches]
-
-    schedule_keys_sched = extract_schedule_keys(schedule)
+    
     schedule_keys_exam = extract_schedule_keys(examination)
-
-    # Merge the two
-    if schedule_keys_sched == schedule_keys_exam:
-        schedule_keys = schedule_keys_sched
-    elif not schedule_keys_sched:
-        schedule_keys = schedule_keys_exam
-    elif not schedule_keys_exam:
-        schedule_keys = schedule_keys_sched
-    else:
-        schedule_keys = list(dict.fromkeys(schedule_keys_sched + schedule_keys_exam))  # deduplicated
 
     # Detect months and append corresponding 3-week keys
     months = ['january', 'june', 'july', 'august']
-    for month in months:
-        if month in schedule.lower():
-            schedule_keys.append(f"3-weeks {month}")
-            break
+    if "last day" in examination.lower():
+        for month in months:
+            if month in schedule.lower():
+                schedule_keys_exam.append(f"3-weeks {month}")
+                break
 
-    # Debug print
-    # print(f"Schedule keys: {schedule_keys}")
+    # Remove duplicates
+    schedule_keys_exam = list(set(schedule_keys_exam))
 
     # Try course code
-    exam = exam_map.get(course_code)
-    reexam = reexam_map.get(course_code)
+    separator_exam_dates = ", "
+    exam = separator_exam_dates.join(exam_map.get(course_code, ""))
+    reexam = separator_exam_dates.join(reexam_map.get(course_code, ""))
 
-    # Try schedule keys if needed
+    # # Try schedule keys if needed
     if not exam:
-        for sk in schedule_keys:
+        for sk in schedule_keys_exam:
             if sk in exam_map:
-                exam = exam_map[sk]
+                if exam == "":
+                    exam = separator_exam_dates.join(exam_map[sk])
+                else:
+                    exam += separator_exam_dates + separator_exam_dates.join(exam_map[sk])
                 # print(f"Exam found via schedule key: {sk} → {exam}")
-                break
     if not reexam:
-        for sk in schedule_keys:
+        for sk in schedule_keys_exam:
             if sk in reexam_map:
-                reexam = reexam_map[sk]
+                if reexam == "":
+                    reexam = separator_exam_dates.join(reexam_map[sk])
+                else:
+                    reexam += separator_exam_dates + separator_exam_dates.join(reexam_map[sk])
                 # print(f"Reexam found via schedule key: {sk} → {reexam}")
-                break
 
-    # Update entry
+    # # Update entry
     entry["Exam"] = exam
-    entry["Reexam"] = reexam
+    entry["Re_exam"] = reexam
+
+    # # Debug print
+    # if exam == "" or reexam == "":
+    #     course_name = entry["course_name"]
+    #     print(f"Debugging course: {course_code} - {course_name}")
+    #     print(f"Exam: {exam}")
+    #     print(f"Reexam: {reexam}")
+    #     print(f"Schedule: {entry.get('Schedule', '')}")
+    #     type_of_assessment = entry.get("Type of assessment", "")
+    #     print(f"Type of assessment: {type_of_assessment}")
+    #     print(f"Date of examination: {examination}")
+    #     print(f"Schedule keys: {schedule_keys_exam}\n\n")
 
     return entry
 
@@ -241,7 +247,7 @@ def build_course_data(course_dict, course_analyzer_data, exam_by_code, reexam_by
             "course_name": normalized.get("course_name"),
             "schedule": normalized.get("schedule"),
             "exam": normalized.get("exam"),
-            "reexam": normalized.get("reexam"),
+            "re_exam": normalized.get("re_exam"),
             "semester": normalized.get("semester"),
             "ects": normalized.get("ects")
         }
