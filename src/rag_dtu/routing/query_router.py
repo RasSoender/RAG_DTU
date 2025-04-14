@@ -364,7 +364,7 @@ class QueryRouter:
         Returns a structured analysis as a JSON object.
         """
         # Get whole conversation history
-        history_query = self.query_memory.get_last_n_items(5)  # Get last 5 items for context
+        history_query = self.query_memory.get_last_n_items(1)  # Get last 5 items for context
         history_context_query = self.query_memory.get_formatted_history(history_query)
         
         available_programmes_str = ", ".join(self.available_programmes) if self.available_programmes else "None"
@@ -386,11 +386,15 @@ Please provide a structured analysis with the following fields:
     WARNING: If there is a code of 5 digits like 02450 it is a course_query
    - course_query: The user is asking information about a course: the information that can be useful for asserting if the question is regarding a course are like course code, course name, course content, course semester, course schedule, course exam date, course signups, course average grade, course failed students in percent, course workload burden, course overworked students in percent, and course average rating, prerequisites for a course, course requirements etc.
    - programme_query: The user is asking about degree programmes or related information. These information could be regarding programmes like thesis, requirements,learning objective etc. For asserting well, always check the programme name in the query and the available programme list. Moreover, if asked about if a specific course is mandatory for a specific programme, it is a programme query.
-   - conversation_query: The user is referring to previous conversation without specifying course/programme details. In this case probably it is needed the history for better answering the query. If there is a question that make sense but the user doesn't really specify a programme name, or a course, or a course code, probably the user is referring to past conversations and so this is the correct field. For example, if the user refer to "that master" or "that course" or similar, this is the correct field.
+   - conversation_query: If there is a question that make sense but the user doesn't really specify a programme name, or a course, or a course code, probably the user is referring to past conversations and so this is the correct field. For example, if the user refer to "that master" or "that course" or similar, this is the correct field. WARNING: If make sense that the questions is regarding past queries, but there is a course name, or a programme names etc, prefer other query_type with respect to this, and returns requires_history = true.
    - unknown_query: The query doesn't clearly fit the above categories.
 2. requires_history: true/false, indicating if the query requires conversation history for context since the query is not specific enough. Usually, when it falls to conversation_query field, it is also required
 3. course_code: If applicable, a 5-digit course code extracted from the query.
-4. programme_name: If applicable, if the query appears to be about a programme, output the exact programme name from the provided list that most closely matches the query; if none match, output an empty string.
+4. programme_name: If applicable but just only if there is explicitly written in the query, if the query appears to be about a programme, output the exact programme name from the provided list that most closely matches the query; if none match, output an empty string.
+
+###WARNING
+1. If in the query there is the word exam, course, probably the user is referring to course_query
+2. If in the query there is the word programme, master etc, probably the user is referring to programme_query
 
 Format your response as a valid JSON object with these fields.
 """
@@ -409,7 +413,6 @@ Format your response as a valid JSON object with these fields.
             if not content.strip().startswith("{"):
                 raise ValueError("Response is not valid JSON")
             analysis = json.loads(content)
-            print(analysis)
             return analysis
         except Exception as e:
             print(f"Error analyzing query: {e}")
@@ -713,7 +716,8 @@ Requires History: {requires_history}
 ### 3. **Conversation History:**
 - This includes recent exchanges between the user and the assistant.
 - Use this section to understand what the user might be referring to.
-- If the query is unclear or missing context, use the history to infer what the user might need help with.
+- If the query is missing context, use the history to infer what the user might need help with.
+-The conversation history has also the information that you need for answering the query
 
 Conversation History:
 {history_context}
@@ -722,16 +726,14 @@ Conversation History:
 
 ### ✅ **Your Task:**
 1. **Interpret the User Query:**
-   - Try to understand whether the current query builds on a previous one from the conversation history.
-   - If context is still unclear, politely ask for clarification.
+   - If you are here, this means that the actual query {query} refers to past information that you can find in the history context. 
 
 2. **Identify Topic Type (if possible):**
-   - If you infer that the user is talking about a course or a Master's programme, you can gently ask them to confirm or specify which one.
-   - Do not assume or invent details.
+   - What you should do is, given the query, look in the conversation history, in the past query, and use those information for answering
 
 3. **Ask for Clarification (if needed):**
-   - If the query is too vague to act on, respond in a friendly and professional tone:
-     > _"Just to help me assist you better — are you asking about a specific DTU course or Master's programme?"_
+   - If you do not find information or you are not sure for answering the query in the Conversation History, respond politely with:
+     > _"Just to help me assist you better — could you rephrase the question better, including name of courses or Masters that you are interes in?"_
 
 ---
 
