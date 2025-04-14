@@ -7,7 +7,8 @@ from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
 
 # Initialize NLP tools
 stop_words = set(stopwords.words('english'))

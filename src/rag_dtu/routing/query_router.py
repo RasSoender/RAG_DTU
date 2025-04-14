@@ -6,7 +6,7 @@ import uuid
 import time
 import difflib
 from typing import List, Dict, Any, Optional, Tuple
-from text_normalization_programmes import normalize_query
+from .text_normalization_programmes import normalize_query
 from dataclasses import dataclass
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
@@ -15,6 +15,8 @@ from rich.markdown import Markdown
 from weaviate.classes.init import Auth
 from weaviate.classes.config import Property, DataType, Configure
 from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
+from dotenv import load_dotenv
+load_dotenv()
 
 # Constants and Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
