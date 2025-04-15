@@ -21,7 +21,8 @@ load_dotenv()
 # Constants and Configuration
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 EMBEDDING_MODEL = "text-embedding-3-small"
-LLM_MODEL = "gpt-4o-mini"
+# LLM_MODEL = "gpt-4o-mini"
+LLM_MODEL = "gpt-4.1-mini"
 
 # Initialize clients
 openai_client = OpenAI(api_key=OPENAI_API_KEY)
@@ -281,6 +282,64 @@ class MultiVectorDBClient:
         except Exception as e:
             print(f"Error in search_courses: {e}")
             return []
+        
+    def build_context_str_courses(self, search_results: List[Dict]) -> str:
+        context_lines = []
+        query_information = ""
+        context_information = ""
+        for course in search_results:
+            course_code = course.get("course_code", "N/A")
+            course_name = course.get("course_name", "Unnamed Course")
+            preprocessed_text = course.get("content", "")
+            semester = course.get("semester", "N/A"),
+            ects = course.get("ects", "N/A"),
+            schedule = course.get("schedule", "N/A"),
+            exam = course.get("exam", "N/A"),
+            signups = course.get("signups", "N/A"),
+            average_grade = course.get("average_grade", "N/A"),
+            failed_students = course.get("failed_students_in_percent", "N/A"),
+            workload_burden = course.get("workload_burden", "N/A"),
+            overworked_students = course.get("overworked_students_in_percent", "N/A"),
+            average_rating = course.get("average_rating", "N/A"),
+
+            context_lines.append(
+                f"Course Code: {course_code}\n"
+                f"Title: {course_name}\n"
+                f"ECTS: {ects}\n"
+                f"Semester: {semester}\n"
+                f"Schedule: {schedule}\n"
+                f"Exam Date: {exam}\n"
+                f"Details: {preprocessed_text}\n"
+                f"Signups: {signups}\n"
+                f"Average Grade: {average_grade}\n"
+                f"Failed Students: {failed_students}\n"
+                f"Workload Burden: {workload_burden}\n"
+                f"Overworked Students: {overworked_students}\n"
+                f"Average Rating: {average_rating}\n"
+            )
+
+            # Format the course information
+            context_information += f"Course Code: {course_code}\n"
+            context_information += f"Title: {course_name}\n"
+            context_information += f"ECTS: {ects}\n"
+            context_information += f"Semester: {semester}\n"
+            context_information += f"Schedule: {schedule}\n"
+            context_information += f"Exam Date: {exam}\n"
+            context_information += f"Signups: {signups}\n"
+            context_information += f"Average Grade: {average_grade}\n"
+            context_information += f"Failed Students: {failed_students}\n"
+            context_information += f"Workload Burden: {workload_burden}\n"
+            context_information += f"Overworked Students: {overworked_students}\n"
+            context_information += f"Average Rating: {average_rating}\n"
+            context_information += f"Details: {preprocessed_text}\n\n"
+            context_information += "---\n\n"
+
+            query_information += f"Course Code: {course_code}\n"
+            query_information += f"Title: {course_name}\n"
+            context_information += "---\n\n"
+
+        context_str = "\n\n---\n\n".join(context_lines)
+        return context_str, query_information, context_information
     
     def search_programmes(self, query: str, top_k: int = 5, filter_programme: str = None) -> List[Dict]:
         """Search for programme information."""
@@ -335,6 +394,33 @@ class MultiVectorDBClient:
             print(f"Error in search_programmes: {e}")
             return []
 
+    def build_context_str_programmes(self, search_results: List[Dict]) -> str:
+        context_lines = []
+        query_information = ""
+        context_information = ""
+        for information in search_results:
+            course_name = information.get("programme_name", "N/A")
+            chunk_name = information.get("section_name", "Unnamed Course")
+            chunk_content = information.get("content", "")
+
+            context_lines.append(
+                f"Master's programme name: {course_name}\n"
+                f"Chunk name: {chunk_name}\n"
+                f"Chunk content: {chunk_content}\n"
+            )
+
+            query_information += f"Master's programme name: {course_name}\n"
+            query_information += f"Chunk name: {chunk_name}\n"
+            query_information += "---\n\n"
+
+            context_information += f"Master's programme name: {course_name}\n"
+            context_information += f"Chunk name: {chunk_name}\n"
+            context_information += f"Chunk content: {chunk_content}\n"
+            context_information += "---\n\n"
+
+        context_str = "\n\n---\n\n".join(context_lines)
+        return context_str, query_information, context_information
+    
 class QueryRouter:
     """
     Router that analyzes user queries, determines intent type and if history is required.
@@ -354,6 +440,7 @@ class QueryRouter:
         self.context_memory = context_memory
         self.vector_db_client = vector_db_client
         self.openai_client = openai_client
+        self.previous_query_analysis = ""
         # Retrieve available programmes list from Weaviate
         self.available_programmes = self.vector_db_client.get_available_programmes()
     
@@ -443,8 +530,6 @@ Format your response as a valid JSON object with these fields.
             if history else "No conversation history available."
         )
         response = ""
-        context_lines = []
-        context_str = ""
         query_information = ""
         context_information = ""
         if query_type == self.QUERY_TYPES["COURSE"]:
@@ -452,88 +537,31 @@ Format your response as a valid JSON object with these fields.
             normalized_query, _ = normalize_query(query)
             search_results = self.vector_db_client.search_courses(normalized_query, filters=filters)
             if search_results:
-                for course in search_results:
-                    course_code = course.get("course_code", "N/A")
-                    course_name = course.get("course_name", "Unnamed Course")
-                    preprocessed_text = course.get("content", "")
-                    semester = course.get("semester", "N/A"),
-                    ects = course.get("ects", "N/A"),
-                    schedule = course.get("schedule", "N/A"),
-                    exam = course.get("exam", "N/A"),
-                    signups = course.get("signups", "N/A"),
-                    average_grade = course.get("average_grade", "N/A"),
-                    failed_students = course.get("failed_students_in_percent", "N/A"),
-                    workload_burden = course.get("workload_burden", "N/A"),
-                    overworked_students = course.get("overworked_students_in_percent", "N/A"),
-                    average_rating = course.get("average_rating", "N/A"),
-
-                    context_lines.append(
-                        f"Course Code: {course_code}\n"
-                        f"Title: {course_name}\n"
-                        f"ECTS: {ects}\n"
-                        f"Semester: {semester}\n"
-                        f"Schedule: {schedule}\n"
-                        f"Exam Date: {exam}\n"
-                        f"Details: {preprocessed_text}\n"
-                        f"Signups: {signups}\n"
-                        f"Average Grade: {average_grade}\n"
-                        f"Failed Students: {failed_students}\n"
-                        f"Workload Burden: {workload_burden}\n"
-                        f"Overworked Students: {overworked_students}\n"
-                        f"Average Rating: {average_rating}\n"
-                    )
-
-                    # Format the course information
-                    context_information += f"Course Code: {course_code}\n"
-                    context_information += f"Title: {course_name}\n"
-                    context_information += f"ECTS: {ects}\n"
-                    context_information += f"Semester: {semester}\n"
-                    context_information += f"Schedule: {schedule}\n"
-                    context_information += f"Exam Date: {exam}\n"
-                    context_information += f"Signups: {signups}\n"
-                    context_information += f"Average Grade: {average_grade}\n"
-                    context_information += f"Failed Students: {failed_students}\n"
-                    context_information += f"Workload Burden: {workload_burden}\n"
-                    context_information += f"Overworked Students: {overworked_students}\n"
-                    context_information += f"Average Rating: {average_rating}\n"
-                    context_information += f"Details: {preprocessed_text}\n\n"
-                    context_information += "---\n\n"
-
-                    query_information += f"Course Code: {course_code}\n"
-                    query_information += f"Title: {course_name}\n"
-                    context_information += "---\n\n"
-
-                context_str = "\n\n---\n\n".join(context_lines)
+                context_str, query_information, context_information = self.vector_db_client.build_context_str_courses(search_results)
                 response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+            self.previous_query_analysis = analysis
         elif query_type == self.QUERY_TYPES["PROGRAMME"]:
             prog_name = analysis.get("programme_name", "").strip()
             normalized_query, _ = normalize_query(query)
             search_results = self.vector_db_client.search_programmes(query, filter_programme=prog_name if prog_name else None)
             if search_results:
-                for information in search_results:
-                    course_name = information.get("programme_name", "N/A")
-                    chunk_name = information.get("section_name", "Unnamed Course")
-                    chunk_content = information.get("content", "")
-
-                    context_lines.append(
-                        f"Master's programme name: {course_name}\n"
-                        f"Chunk name: {chunk_name}\n"
-                        f"Chunk content: {chunk_content}\n"
-                    )
-
-                    query_information += f"Master's programme name: {course_name}\n"
-                    query_information += f"Chunk name: {chunk_name}\n"
-                    query_information += "---\n\n"
-
-                    context_information += f"Master's programme name: {course_name}\n"
-                    context_information += f"Chunk name: {chunk_name}\n"
-                    context_information += f"Chunk content: {chunk_content}\n"
-                    context_information += "---\n\n"
-
-                context_str = "\n\n---\n\n".join(context_lines)
+                context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
                 response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+            self.previous_query_analysis = analysis
         elif query_type == self.QUERY_TYPES["CONVERSATION"]:
-            response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+            context_str = ""
+            previous_query_type = self.previous_query_analysis.get("query_type", self.QUERY_TYPES["UNKNOWN"])
+            if previous_query_type == self.QUERY_TYPES["COURSE"]:
+                response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+            elif previous_query_type == self.QUERY_TYPES["PROGRAMME"]:
+                prog_name = analysis.get("programme_name", "").strip()
+                if prog_name == "":
+                    prog_name = self.previous_query_analysis.get("programme_name", "").strip()
+                normalized_query, _ = normalize_query(query)
+                search_results = self.vector_db_client.search_programmes(query, filter_programme=prog_name if prog_name else None)
+                if search_results:
+                    context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
+                response = self._generate_response(query, previous_query_type, requires_history, history_context, context_str)
         else:  # unknown query type
             response = "I'm not sure I fully understood your question. Could you please rephrase it or provide a bit more detail so I can assist you more effectively? If you are interested in something related to a course, provide the course code; if you are interested in something related to a programme, provide the programme name."
         
