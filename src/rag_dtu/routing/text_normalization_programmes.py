@@ -11,7 +11,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Initialize NLP tools
-stop_words = set(stopwords.words('english'))
+try:
+    stop_words = set(stopwords.words('english'))
+except LookupError:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+
+nltk.download('punkt')
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
