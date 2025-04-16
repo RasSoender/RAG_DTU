@@ -6,7 +6,7 @@ import uuid
 import time
 import difflib
 from typing import List, Dict, Any, Optional, Tuple
-from .text_normalization_programmes import normalize_query
+from text_normalization_programmes import normalize_query
 from dataclasses import dataclass
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
@@ -63,6 +63,7 @@ class MemoryItem:
     user_query: str
     query_type: str
     retrieved_info: str
+    used_before_info : str = None
     metadata: Dict[str, Any] = None
 
 @dataclass
@@ -72,6 +73,7 @@ class QueryMemoryItem:
     user_query: str
     query_type: str
     additional_info: str
+    used_before_info : str = None
 
 
 class QueryMemory:
@@ -81,14 +83,15 @@ class QueryMemory:
         self.max_items = max_items
     
     def add(self, user_query: str, query_type: str, 
-            additional_info: str, 
+            additional_info: str,used_before_info: str = None, 
             metadata: Dict[str, Any] = None) -> None:
         """Add a new item to memory with current timestamp."""
         memory_item = QueryMemoryItem(
             timestamp=time.time(),
             user_query=user_query,
             query_type=query_type,
-            additional_info=additional_info
+            additional_info=additional_info,
+            used_before_info=used_before_info
         )
         self.memory.append(memory_item)
         # Trim memory if it exceeds max size
@@ -110,6 +113,7 @@ class QueryMemory:
                 f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item.timestamp))}\n"
                 f"User: {item.user_query}\n"
                 f"Type: {item.query_type}\n"
+                f"Used Before Information: {item.used_before_info}\n"
                 f"Additional Information:\n{item.additional_info}\n"
             )
         return "\n---\n".join(history_parts)
@@ -127,7 +131,7 @@ class Memory:
         self.max_items = max_items
     
     def add(self, user_query: str, query_type: str, 
-            retrieved_info: str, 
+            retrieved_info: str, used_before_info: str = None,
             metadata: Dict[str, Any] = None) -> None:
         """Add a new item to memory with current timestamp."""
         memory_item = MemoryItem(
@@ -135,6 +139,7 @@ class Memory:
             user_query=user_query,
             query_type=query_type,
             retrieved_info=retrieved_info,
+            used_before_info=used_before_info,
             metadata=metadata
         )
         self.memory.append(memory_item)
@@ -159,6 +164,7 @@ class Memory:
                 f"Timestamp: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(item.timestamp))}\n"
                 f"User: {item.user_query}\n"
                 f"Type: {item.query_type}\n"
+                f"Used Before Information: {item.used_before_info}\n"
                 f"Retrieved Information:\n{item.retrieved_info}\n"
                 f"Metadata: {json.dumps(item.metadata, indent=2) if item.metadata else 'None'}"
             )
@@ -453,7 +459,7 @@ class QueryRouter:
         Returns a structured analysis as a JSON object.
         """
         # Get whole conversation history
-        history_query = self.query_memory.get_last_n_items(1)  # Get last 5 items for context
+        history_query = self.query_memory.get_last_n_items(5)  # Get last 5 items for context
         history_context_query = self.query_memory.get_formatted_history(history_query)
         
         available_programmes_str = ", ".join(self.available_programmes) if self.available_programmes else "None"
@@ -473,13 +479,13 @@ Analyze the following user query and determine what the user is asking about.
 Please provide a structured analysis with the following fields:
 1. query_type: Exactly one of ["course_query", "programme_query", "conversation_query", "unknown_query"]
     WARNING: If there is a code of 5 digits like 02450 it is a course_query
-   - course_query: The user is asking information about a course: the information that can be useful for asserting if the question is regarding a course are like course code, course name, course content, course semester, course schedule, course exam date, course signups, course average grade, course failed students in percent, course workload burden, course overworked students in percent, and course average rating, prerequisites for a course, course requirements etc.
-   - programme_query: The user is asking about degree programmes or related information. These information could be regarding programmes like thesis, requirements,learning objective etc. For asserting well, always check the programme name in the query and the available programme list. Moreover, if asked about if a specific course is mandatory for a specific programme, it is a programme query.
-   - conversation_query: If there is a question that make sense but the user doesn't really specify a programme name, or a course, or a course code, probably the user is referring to past conversations and so this is the correct field. For example, if the user refer to "that master" or "that course" or similar, this is the correct field. WARNING: If make sense that the questions is regarding past queries, but there is a course name, or a programme names etc, prefer other query_type with respect to this, and returns requires_history = true.
+   - course_query: The user is asking information about a course: the information that can be useful for asserting if the question is regarding a course are like course code, course name, course content, course semester, course schedule, course exam date, course signups, course average grade, course failed students in percent, course workload burden, course overworked students in percent, and course average rating, prerequisites for a course, course requirements, course teacher etc.
+   - programme_query: The user is asking about degree programmes or related information. These information could be regarding programmes like thesis, requirements,learning objective, head of study, currriculu, specializations, etc. For asserting well, always check the programme name in the query and the available programme list, if there is nothing that match close, do not use this field. Moreover, if asked about if a specific course is mandatory for a specific programme, it is a programme query.
+   - conversation_query: If there is a question that make sense but the user doesn't really specify a programme name, or a course, or a course code, probably the user is referring to past conversations and so this is the correct field. For example, if the user refer to "that master" or "that course" or similar, this is the correct field. WARNING: If the questions is regarding past queries, but there is a course name, or a programme names etc, prefer other query_type with respect to this, and returns requires_history = true.
    - unknown_query: The query doesn't clearly fit the above categories.
 2. requires_history: true/false, indicating if the query requires conversation history for context since the query is not specific enough. Usually, when it falls to conversation_query field, it is also required
-3. course_code: If applicable, a 5-digit course code extracted from the query.
-4. programme_name: If applicable but just only if there is explicitly written in the query, if the query appears to be about a programme, output the exact programme name from the provided list that most closely matches the query; if none match, output an empty string.
+3. course_code: If applicable, a 5-digit course code extracted from the query or, if you find that the course code is in the past queries, take it from the conversation history.
+4. programme_name: If applicable but just only if there is explicitly written in the query, if the query appears to be about a programme, output the exact programme name from the provided list that most closely matches the query; if none match, output an empty string. Moreover, if you find that the newest query can be referred to a programme name of the past queries, give it.
 
 ###WARNING
 1. If in the query there is the word exam, course, probably the user is referring to course_query
@@ -521,6 +527,7 @@ Format your response as a valid JSON object with these fields.
         - For conversation or unknown queries, generate an LLM response.
         Returns the assistant's response along with analysis details.
         """
+        print(f"Routing query: {query}")
         analysis = self.analyze_query(query)
         query_type = analysis.get("query_type", self.QUERY_TYPES["UNKNOWN"])
         requires_history = analysis.get("requires_history", False)
@@ -529,7 +536,8 @@ Format your response as a valid JSON object with these fields.
             self.context_memory.get_formatted_history(history)
             if history else "No conversation history available."
         )
-        response = ""
+        answer = ""
+        other_info = None
         query_information = ""
         context_information = ""
         if query_type == self.QUERY_TYPES["COURSE"]:
@@ -539,6 +547,10 @@ Format your response as a valid JSON object with these fields.
             if search_results:
                 context_str, query_information, context_information = self.vector_db_client.build_context_str_courses(search_results)
                 response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+                answer = response.get("response", "")
+                other_info = response.get("other", None)
+                if other_info:
+                    context_information = [result for result in search_results if result.get("course_code") == other_info]
             self.previous_query_analysis = analysis
         elif query_type == self.QUERY_TYPES["PROGRAMME"]:
             prog_name = analysis.get("programme_name", "").strip()
@@ -547,38 +559,47 @@ Format your response as a valid JSON object with these fields.
             if search_results:
                 context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
                 response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+                answer = response.get("response", "")
+                other_info = response.get("other", None)
             self.previous_query_analysis = analysis
         elif query_type == self.QUERY_TYPES["CONVERSATION"]:
             context_str = ""
             previous_query_type = self.previous_query_analysis.get("query_type", self.QUERY_TYPES["UNKNOWN"])
             if previous_query_type == self.QUERY_TYPES["COURSE"]:
-                response = self._generate_response(query, query_type, requires_history, history_context, context_str)
+                normalized_query, _ = normalize_query(query)
+                response = self._generate_response(normalized_query, query_type, requires_history, history_context, context_str)
+                answer = response.get("response", "")
+                other_info = response.get("other", None)
             elif previous_query_type == self.QUERY_TYPES["PROGRAMME"]:
                 prog_name = analysis.get("programme_name", "").strip()
                 if prog_name == "":
                     prog_name = self.previous_query_analysis.get("programme_name", "").strip()
                 normalized_query, _ = normalize_query(query)
-                search_results = self.vector_db_client.search_programmes(query, filter_programme=prog_name if prog_name else None)
+                search_results = self.vector_db_client.search_programmes(normalized_query, filter_programme=prog_name if prog_name else None)
                 if search_results:
                     context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
-                response = self._generate_response(query, previous_query_type, requires_history, history_context, context_str)
+                response = self._generate_response(normalized_query, previous_query_type, requires_history, history_context, context_str)
+                answer = response.get("response", "")
+                other_info = response.get("other", None)
         else:  # unknown query type
-            response = "I'm not sure I fully understood your question. Could you please rephrase it or provide a bit more detail so I can assist you more effectively? If you are interested in something related to a course, provide the course code; if you are interested in something related to a programme, provide the programme name."
+            response = "I'm not sure I fully understood your question. Could you please rephrase it or provide a bit more detail in the next question so I can assist you more effectively? If you are interested in something related to a course, provide the course code; if you are interested in something related to a programme, provide the programme name."
         
         # Update memory with this exchange
         self.query_memory.add(
             user_query=query,
             query_type=query_type,
-            additional_info=query_information
+            additional_info=query_information,
+            used_before_info=other_info
         )
 
         self.context_memory.add(
             user_query=query,
             query_type=query_type,
-            retrieved_info=context_information
+            retrieved_info=context_information,
+            used_before_info=other_info
         )
         
-        return response, {"query_type": query_type, "requires_history": requires_history}
+        return answer, {"query_type": query_type, "requires_history": requires_history}
         
     def _generate_response(self, query: str, query_type: str, requires_history: bool, history_context: str, retrieved_info : str) -> str:
         """Generate an LLM-based response when a search is not executed."""
@@ -588,6 +609,13 @@ Format your response as a valid JSON object with these fields.
             system_message = "You are an expert academic advisor specialized in university courses."
             prompt = f"""
 You are a highly knowledgeable and polite academic assistant with expertise in all DTU courses. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU courses. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
+
+At the end, return your reply in **JSON format** with the following structure:
+```json
+{{
+  "response": "Your natural language response in markdown here.",
+  "other": "The DTU course code (e.g., '02450') of the course that you used for answering the query, otherwise null. Provide a single course code always."
+}}
 
 ---
 
@@ -631,13 +659,14 @@ Conversation History:
 1. **Interpret the User Query:**
    - If the course name or code is clearly mentioned, probably you can find the relevant course details from the Course Information section and answer accordingly.
    - If not, do not be creative, firstly check the conversation history for figuring out if the present query {query} is connected to the last query and so you can find information in the conversation history, otherwise simply ask more information.
+   - For example, if the user firstly ask "What is the literature of the course 02450" and then "What about the exam?", you can find the information in the conversation history, and so you can answer to the user without asking for more information.
 
 2. **Fallback on History:**
    - If a course information is not found in Course Information, check the Conversation History for a reference to the course or topic, mostly in the previous query.
 
 3. **Ask for Clarification (if needed):**
    - If the information cannot be determined from either Course Information or Conversation History, reply in a friendly and polite tone:
-     > _"I'm currently unable to identify the course. Could you kindly include the course code so I can help more effectively?"_
+     > _"I'm currently unable to identify the course. Could you kindly include the course code when reformulating the question so I can help more effectively?"_
 
 ---
 
@@ -646,6 +675,7 @@ Conversation History:
 - Always respond in **markdown** format.
 - Be **factual**, **concise**, and **professional**.
 - Avoid showing internal logic or thought process — just speak naturally and helpfully.
+-Return the response in JSON format with the structure provided above.
 
 ---
 """
@@ -656,6 +686,12 @@ Conversation History:
             prompt = f"""
 You are a highly knowledgeable and polite academic assistant with expertise in all DTU Master's programmes. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU Master's programmes. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
 
+At the end, return your reply in **JSON format** with the following structure:
+```json
+{{
+  "response": "Your natural language response in markdown here.",
+  "other": "The DTU master's programme name (e.g., 'Business_Analytics') of the master that you used for answering the query, otherwise null. Provide a single course master's programme always."
+}}
 ---
 
 ### 1. **User Query:**
@@ -686,8 +722,8 @@ Master's Programme Data:
 
 ### 4. **Conversation History:**
 - This includes recent exchanges between the user and the assistant.
-- Use this to determine whether the current query builds on a previous request about a specific programme.
-- Do not be creative. If the programme context is not available in either the current query or the history, ask the user to clarify.
+- Use this to determine whether the current query builds ir refers on a previous request about a specific programme.
+- If programme name is unclear or missing in the query, use this section to infer context from previous user questions or previously retrieved master's programme data.
 
 Conversation History:
 {history_context}
@@ -698,13 +734,14 @@ Conversation History:
 1. **Interpret the User Query:**
    - If the programme name is clearly mentioned, retrieve the appropriate details from the Master’s Programme Information section.
    - If not, first check the conversation history to determine whether the user is referring to a previously discussed programme.
+   - For example, a common situation is when the user asks "What are learning objectives of the master's programme Business Analytics?" and then "What about the curriculum?". In this case, you can find the information in the conversation history and answer without asking for more information.
 
 2. **Identify Relevant Fields:**
    - In curriculum info there are all the informations regarding courses that are mandatory, specializations etc. WARNING: Exam that falls undeer polytechnical foundation are mandatory if asked!
 
 3. **Ask for Clarification (if needed):**
    - If you are unable to identify the programme or the topic, respond politely with:
-     > _"I'm currently not sure which Master's programme you're referring to. Could you please include the programme name so I can help you more effectively?"_
+     > _"I'm currently not sure which Master's programme you're referring to. Could you please include the programme name when reformulating the query so I can help you more effectively?"_
 
 ---
 
@@ -713,6 +750,7 @@ Conversation History:
 - Always respond in **markdown** format.
 - Be **factual**, **clear**, and **concise** — but also friendly.
 - Never show internal logic or reasoning — only the final helpful response.
+- Return the response in JSON format with the structure provided above.
 
 ---
 """
@@ -722,7 +760,12 @@ Conversation History:
             system_message = "You are an expert academic advisor responding to general queries."
             prompt = f"""
 You are a highly knowledgeable and polite academic assistant at DTU. Your mission is to provide **helpful**, **context-aware**, and **friendly** answers to general academic queries that do not clearly fit into the categories of courses or programmes. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
-
+At the end, return your reply in **JSON format** with the following structure:
+```json
+{{
+  "response": "Your natural language response in markdown here.",
+  "other": "The DTU master's programme name (e.g., 'Business_Analytics') of the master that you used for answering the query or the course code (e.g. 02450) of the course that you used for inferring the query, otherwise null. Provide a single course master's programme always."
+}}
 ---
 
 ### 1. **User Query:**
@@ -773,6 +816,7 @@ Conversation History:
 - Be **friendly**, **conversational**, and **helpful**.
 - Keep the tone light while still professional.
 - Never show internal logic or reasoning steps — just reply naturally.
+- Return the response in JSON format with the structure provided above.
 
 ---
 """
@@ -783,9 +827,16 @@ Conversation History:
                     {"role": "system", "content": system_message},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=temperature_set
+                temperature=temperature_set,
+                response_format={"type": "json_object"}
             )
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+
+            # Additional safety check
+            if not content.strip().startswith("{"):
+                raise ValueError("Response is not valid JSON")
+            json_answer = json.loads(content)
+            return json_answer
         except Exception as e:
             print(f"Error generating response: {e}")
             return "I encountered an error while processing your question. Could you try asking in a different way?"
