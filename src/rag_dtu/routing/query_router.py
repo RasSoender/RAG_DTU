@@ -6,7 +6,7 @@ import uuid
 import time
 import difflib
 from typing import List, Dict, Any, Optional, Tuple
-from text_normalization_programmes import normalize_query
+from .text_normalization_programmes import normalize_query
 from dataclasses import dataclass
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
