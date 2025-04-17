@@ -16,7 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
     from src.rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
 except ImportError as e:
-    print(e)
+    raise e 
     print("Error importing modules. Please ensure the 'rag_dtu' package is installed and accessible.")
     # class Memory:
     #     def __init__(self, max_items=10):
