@@ -12,7 +12,7 @@ os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNING"] = "true"
 tracemalloc.start()
 
 # main_page.py (inside app/)
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src/rag_dtu")))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 try:
     from rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
 except ImportError as e:
