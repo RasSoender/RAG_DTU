@@ -7,13 +7,13 @@ from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 import os
-
+from config import get_openai_api_key
 
 # Initialize NLP tools
 stop_words = set(stopwords.words('english'))
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=get_openai_api_key())
 # Constants
 FIELDS_TO_SKIP = [
     "Curriculum, previous admission years",

@@ -11,7 +11,7 @@ os.environ["STREAMLIT_WATCH_MODE"] = "poll"
 os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNING"] = "true"
 tracemalloc.start()
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
 
 try:
     from rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter

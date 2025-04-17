@@ -3,9 +3,10 @@ import json
 import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from config import get_openai_api_key
 
 # Set your OpenAI API key
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=get_openai_api_key())
 
 def get_embedding(text, model="text-embedding-3-small"):
     """

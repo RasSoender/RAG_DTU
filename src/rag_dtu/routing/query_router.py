@@ -17,9 +17,10 @@ from weaviate.classes.config import Property, DataType, Configure
 from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
 from dotenv import load_dotenv
 load_dotenv()
+from config import get_openai_api_key
 
 # Constants and Configuration
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = get_openai_api_key()
 EMBEDDING_MODEL = "text-embedding-3-small"
 # LLM_MODEL = "gpt-4o-mini"
 LLM_MODEL = "gpt-4.1-mini"

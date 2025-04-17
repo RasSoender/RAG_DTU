@@ -13,9 +13,10 @@ from weaviate.classes.init import Auth
 from weaviate.classes.config import Property, DataType, Configure
 from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
 import uuid
+from config import get_openai_api_key
 
 # Set your OpenAI API key
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=get_openai_api_key())
 weaviate_api_key = "4JjcaYcEYBUzb46TpPu6f1qR5CjVJXb5wFB7"
 weaviate_url = "fjax7aot34bgxxo433ma.c0.europe-west3.gcp.weaviate.cloud"
 

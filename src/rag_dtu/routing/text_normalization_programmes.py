@@ -9,6 +9,8 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from config import get_openai_api_key
+
 
 # Initialize NLP tools
 try:
@@ -24,7 +26,7 @@ except LookupError:
 
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=get_openai_api_key())
 # Constants
 FIELDS_TO_SKIP = [
     "Curriculum, previous admission years",
