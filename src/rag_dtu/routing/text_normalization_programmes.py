@@ -9,7 +9,7 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 load_dotenv()
-from config import get_openai_api_key
+from rag_dtu.config import get_openai_api_key
 
 
 # Initialize NLP tools

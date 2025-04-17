@@ -7,7 +7,7 @@ from nltk.stem import PorterStemmer, WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from openai import OpenAI
 import os
-from config import get_openai_api_key
+from rag_dtu.config import get_openai_api_key
 
 # Initialize NLP tools
 stop_words = set(stopwords.words('english'))

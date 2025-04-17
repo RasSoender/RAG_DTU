@@ -11,10 +11,10 @@ os.environ["STREAMLIT_WATCH_MODE"] = "poll"
 os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNING"] = "true"
 tracemalloc.start()
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../src")))
-
+# main_page.py (inside app/)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
-    from rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
+    from src.rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
 except ImportError as e:
     print(e)
     print("Error importing modules. Please ensure the 'rag_dtu' package is installed and accessible.")

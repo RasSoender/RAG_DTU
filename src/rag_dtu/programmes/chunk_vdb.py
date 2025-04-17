@@ -13,7 +13,7 @@ from weaviate.classes.init import Auth
 from weaviate.classes.config import Property, DataType, Configure
 from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
 import uuid
-from config import get_openai_api_key
+from rag_dtu.config import get_openai_api_key
 
 
 # Set your OpenAI API key

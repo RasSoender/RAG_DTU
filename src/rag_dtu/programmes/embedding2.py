@@ -3,7 +3,7 @@ import json
 import os
 import numpy as np
 from sentence_transformers import SentenceTransformer
-from config import get_openai_api_key
+from rag_dtu.config import get_openai_api_key
 
 # Set your OpenAI API key
 client = OpenAI(api_key=get_openai_api_key())
