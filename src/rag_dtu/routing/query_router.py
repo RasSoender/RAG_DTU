@@ -242,7 +242,7 @@ class MultiVectorDBClient:
             print(f"Error fetching available programmes: {e}")
             return []
     
-    def search_courses(self, query: str, top_k: int = 5, filters: Dict = None) -> List[Dict]:
+    def search_courses(self, query: str, top_k: int = 7, filters: Dict = None) -> List[Dict]:
         """Search for courses using hybrid search."""
         course_db = "course_db"
         if course_db not in self.clients or not self.clients[course_db]:
@@ -519,7 +519,7 @@ Format your response as a valid JSON object with these fields.
                 "programme_name": ""
             }
     
-    def route_query(self, query: str) -> Tuple[str, Dict[str, Any]]:
+    def route_query(self, query: str, master: str = None) -> Tuple[str, Dict[str, Any]]:
         """
         Determine the query type and route it:
         - For course queries, perform a course search.
@@ -530,6 +530,8 @@ Format your response as a valid JSON object with these fields.
         print(f"Routing query: {query}")
         analysis = self.analyze_query(query)
         query_type = analysis.get("query_type", self.QUERY_TYPES["UNKNOWN"])
+        print(f"Query type: {query_type}")
+        print( f"{master}")
         requires_history = analysis.get("requires_history", False)
         history = self.context_memory.get_last_n_items(5) if requires_history else []
         history_context = (
@@ -555,7 +557,10 @@ Format your response as a valid JSON object with these fields.
         elif query_type == self.QUERY_TYPES["PROGRAMME"]:
             prog_name = analysis.get("programme_name", "").strip()
             normalized_query, _ = normalize_query(query)
+            if master:
+                prog_name = master
             search_results = self.vector_db_client.search_programmes(query, filter_programme=prog_name if prog_name else None)
+            print(f"Search results: {search_results}")
             if search_results:
                 context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
                 response = self._generate_response(query, query_type, requires_history, history_context, context_str)
@@ -575,6 +580,8 @@ Format your response as a valid JSON object with these fields.
                 if prog_name == "":
                     prog_name = self.previous_query_analysis.get("programme_name", "").strip()
                 normalized_query, _ = normalize_query(query)
+                if master:
+                    prog_name = master
                 search_results = self.vector_db_client.search_programmes(normalized_query, filter_programme=prog_name if prog_name else None)
                 if search_results:
                     context_str, query_information, context_information = self.vector_db_client.build_context_str_programmes(search_results)
@@ -582,7 +589,7 @@ Format your response as a valid JSON object with these fields.
                 answer = response.get("response", "")
                 other_info = response.get("other", None)
         else:  # unknown query type
-            response = "I'm not sure I fully understood your question. Could you please rephrase it or provide a bit more detail in the next question so I can assist you more effectively? If you are interested in something related to a course, provide the course code; if you are interested in something related to a programme, provide the programme name."
+            answer = "I'm not sure I fully understood your question. Could you please rephrase it or provide a bit more detail in the next question so I can assist you more effectively? If you are interested in something related to a course, provide the course code; if you are interested in something related to a programme, provide the programme name."
         
         # Update memory with this exchange
         self.query_memory.add(
@@ -729,7 +736,9 @@ Conversation History:
 {history_context}
 
 ---
-
+***WARNING***
+Since the user can select with the UI the master's programme, it can happen that, if the user selected a master and then ask information for another on the query, that you have information for a master different with respect to the query in the retrieved info. 
+If {query} refers to a different master respect to the retrieved data in Master's Programme Data, tell the user "Probably you selected in the sidebar a different master with respect to the one that you are asking for, please check the master's programme name in the sidebar and ask again the question!" 
 ### ✅ **Your Task:**
 1. **Interpret the User Query:**
    - If the programme name is clearly mentioned, retrieve the appropriate details from the Master’s Programme Information section.

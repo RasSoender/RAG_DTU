@@ -1,0 +1,27 @@
+rating_id,session_id,message_id,query,response,rating,comment,program,timestamp
+87c8a8c4-dfb0-4c07-bede-b16afa2cb856,bbb6d567-61d7-495c-9ba9-1e1c45390977,04e3cfab-16b9-4d53-b90b-4ac6d1fb69c6,Hi! I want the email of the teacher of Fluid Dynamics,"Fluid Dynamics is a broad topic covered by several courses at DTU. Could you please specify which course you mean? For example, it could be ""Turbulence modeling"" (46115), ""Theoretical microfluidics"" (10337), ""Hydrodynamics 2"" (41111), ""Computational Fluid Dynamics"" (41317), or another related course. If you provide the course code or exact course name, I can give you the email of the teacher directly.",5,,No program selected,2025-04-17 18:08:57
+7f313593-b3a4-4f8e-ba91-cbe97ef346d7,730129d5-880d-497b-ae2e-2470f6b5bff7,9688259f-f49e-40c8-82bc-adf9c8557b41,Hi! Could you provide information regardinh the course Deep Learning?,"Hello! I can provide detailed information about the DTU course titled ""Deep learning"" (course code 02456), which is a comprehensive 5 ECTS course offered in the autumn semester. The course runs for 13 weeks with lectures and exercises during the first 8 weeks, followed by supervised group projects until the end of the semester. It covers fundamental and advanced deep learning concepts including feed-forward neural networks, convolutional neural networks, sequence modeling with Transformers, generative adversarial networks, and reinforcement learning. 
+
+The course emphasizes practical skills using Python and PyTorch for implementing deep learning models, and it includes a significant project component where students collaborate on applied or methods-oriented projects. The exam consists of an oral examination and project reports. 
+
+This course is suitable for MSc students and covers both theoretical foundations and practical applications of deep learning, preparing students for research or industry roles in machine learning and AI. If you want, I can also provide information on other deep learning-related courses at DTU.
+
+If you need details on a different course or more specific aspects like prerequisites, workload, or exam format, please let me know!",5,,MSc Transport and Logistics,2025-04-17 18:13:18
+c6bf10dc-eec8-4c29-8c3e-97a2d2fc5d40,730129d5-880d-497b-ae2e-2470f6b5bff7,5728d83e-c3be-497b-bc8e-dee38a2c2cc1,Great! What is the average grade?,"I'm glad you're interested! For the Deep Learning course (02456) at DTU, the average grade is approximately 10.53 on the 7-step grading scale. If you want to know more details about the grading or anything else related to the course, feel free to ask!",5,,MSc Transport and Logistics,2025-04-17 18:13:51
+ee7f0433-19de-4c60-9fad-ce073f884c96,50c67256-7c5a-47fb-a139-8cbc8fcd831c,11bda58f-8635-40eb-aa19-1a10e194b11a,Hi! What are prerequisites of Business Analytics master?,"Hello! For admission to the MSc in Business Analytics at DTU, you must hold a relevant Bachelor of Science degree in engineering, a Bachelor in Engineering (diplomingeniøruddannelse), or a Bachelor of Natural Science degree. The bachelor's degree should be less than ten years old. The programme may require you to complete supplementary educational activities (up to 30 ECTS credits) if your prior education does not fully meet the programme's requirements. These supplementary courses must be passed before or in connection with starting the MSc programme.
+
+Additionally, since the MSc is taught in English, you need to demonstrate proficiency in English at B level (e.g., IELTS, TOEFL, CAE).
+
+If you have any specific questions about supplementary courses or other admission details, feel free to ask!",5,Great,No program selected,2025-04-17 18:39:36
+85a3101e-fe15-4d1b-b1e6-ea593177c1ef,50c67256-7c5a-47fb-a139-8cbc8fcd831c,896d8ab7-02f4-4786-8296-7cf2e9781951,Ok! And what are different specializations?,"The MSc in Business Analytics at DTU offers three main specializations (also called study lines) that allow you to focus your expertise in specific areas of business analytics:
+
+1. **Predictive Analytics** – This specialization focuses on techniques and models that help predict future events and trends based on historical data.
+
+2. **Prescriptive Analytics** – Here, the emphasis is on decision-making models that suggest optimal actions to take, answering the question ""what should we do?""
+
+3. **Analytics in Finance** – This track specializes in applying analytics methods specifically to financial data and problems.
+
+These specializations are formed by suggested combinations of technological specialization courses, allowing you to tailor your studies towards your interests and career goals. You also have flexibility to choose elective courses to deepen or broaden your competencies.
+
+If you want, I can provide more details about the courses included in each specialization or how to choose between them.",5,Perfect,No program selected,2025-04-17 18:40:04
+0de9448e-625c-4812-b867-8769b656abd0,acfa6c53-f922-4c78-877f-9e420905aa6c,21ea223c-c7e4-4b1f-9386-271730ee0ac0,02462,"The course with code 02462 is not listed in the current DTU course information I have access to. Could you please verify the course code or provide the course name? That way, I can assist you more effectively with detailed and accurate information.",1,manca il corso,No program selected,2025-04-17 18:59:03
