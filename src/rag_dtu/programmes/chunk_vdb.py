@@ -16,8 +16,8 @@ import uuid
 
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-weaviate_api_key = "4JjcaYcEYBUzb46TpPu6f1qR5CjVJXb5wFB7"
-weaviate_url = "fjax7aot34bgxxo433ma.c0.europe-west3.gcp.weaviate.cloud"
+weaviate_api_key = "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n"
+weaviate_url = "g9h6eircsbe9d9doiv1w.c0.europe-west3.gcp.weaviate.cloud"
 
 # Create client with the required grpc_port parameter
 weaviate_client = weaviate.connect_to_weaviate_cloud(
