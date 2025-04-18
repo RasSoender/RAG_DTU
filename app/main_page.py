@@ -6,9 +6,10 @@ import streamlit as st
 from streamlit_star_rating import st_star_rating
 from PIL import Image
 import base64
-import csv
 import datetime
 import uuid
+import pymongo
+from pymongo import MongoClient
 
 os.environ["STREAMLIT_WATCH_MODE"] = "poll"
 os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNING"] = "true"
@@ -20,51 +21,26 @@ try:
     from rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
 except ImportError:
     print("Error importing modules. Please ensure the 'rag_dtu' package is installed and accessible.")
-    # class Memory:
-    #     def __init__(self, max_items=10):
-    #         self.max_items = max_items
-    #         self.items = []
-    #     def clear(self):
-    #         self.items = []
 
-    # class QueryMemory(Memory):
-    #     pass
-
-    # class MultiVectorDBClient:
-    #     def __init__(self, configs):
-    #         self.configs = configs
-
-    # class QueryRouter:
-    #     def __init__(self, memory_query, memory_context, client):
-    #         self.memory_query = memory_query
-    #         self.memory_context = memory_context
-    #         self.client = client
-    #     def route_query(self, query):
-    #         return f"This is a response to: {query}", {}
-
-# Path to the CSV file for storing ratings - make sure it's in the same folder as the script
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-RATINGS_CSV = os.path.join(SCRIPT_DIR, "chat_ratings.csv")
-
-# Function to ensure the CSV file exists with proper headers
-def ensure_ratings_csv_exists():
-    if not os.path.exists(RATINGS_CSV):
-        with open(RATINGS_CSV, 'w', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([
-                'rating_id', 
-                'session_id', 
-                'message_id', 
-                'query', 
-                'response', 
-                'rating', 
-                'comment',
-                'program',
-                'timestamp'
-            ])
-
-# Call this at startup
-ensure_ratings_csv_exists()
+# MongoDB Connection Setup
+DB_PASSWORD = "rasmus do it"  # Replace this with your actual password
+CONNECTION_STRING = "rasmus do it"
+# Function to get MongoDB connection
+def get_mongodb_connection():
+    try:
+        client = MongoClient(CONNECTION_STRING)
+        # Test connection by accessing server info
+        client.server_info()
+        return client
+    except pymongo.errors.ServerSelectionTimeoutError as e:
+        st.error(f"Could not connect to MongoDB: {e}")
+        return None
+    except pymongo.errors.OperationFailure as e:
+        st.error(f"Authentication failed: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Unexpected error connecting to MongoDB: {e}")
+        return None
 
 # Define program names mapping - displayed name to internal format
 PROGRAM_MAPPING = {
@@ -414,24 +390,38 @@ def save_rating(message_idx, rating, comment=""):
     program = st.session_state.active_program if st.session_state.active_program else "No program selected"
     
     # Get current timestamp
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now()
     
-    # Append to CSV
+    # Create rating document
+    rating_doc = {
+        "rating_id": rating_id,
+        "session_id": st.session_state.session_id,
+        "message_id": message_id,
+        "query": query,
+        "response": response,
+        "rating": rating,
+        "comment": comment,
+        "program": program,
+        "timestamp": timestamp
+    }
+    
+    # Save to MongoDB
     try:
-        with open(RATINGS_CSV, 'a', newline='', encoding='utf-8') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow([
-                rating_id,
-                st.session_state.session_id,
-                message_id,
-                query,
-                response,
-                rating,
-                comment,
-                program,
-                timestamp
-            ])
-        return True
+        # Get MongoDB connection
+        mongo_client = get_mongodb_connection()
+        if mongo_client:
+            db = mongo_client.get_database("dtu_feedback")
+            ratings_collection = db.get_collection("chat_ratings")
+            
+            # Insert the rating document
+            ratings_collection.insert_one(rating_doc)
+            
+            # Close connection
+            mongo_client.close()
+            return True
+        else:
+            st.error("Failed to connect to MongoDB. Rating not saved.")
+            return False
     except Exception as e:
         st.error(f"Failed to save rating: {e}")
         return False
@@ -472,12 +462,27 @@ if "pending_ratings" not in st.session_state:
 if "rating_success" not in st.session_state:
     st.session_state.rating_success = {}
 
+# Test MongoDB connection at startup
+if "mongo_connected" not in st.session_state:
+    client = get_mongodb_connection()
+    if client:
+        st.session_state.mongo_connected = True
+        client.close()
+    else:
+        st.session_state.mongo_connected = False
+
 with st.sidebar:
     st.markdown('<h1 style="font-size: 2.5rem;"><span style="color:#990000;">DTU</span> Chatbot</h1>', unsafe_allow_html=True)
     st.markdown("### 🤖 About This Chatbot")
     st.markdown("This chatbot is designed to support DTU Master's students by making it easier to access and understand key academic information.")
     st.markdown("We know that navigating a study program can be confusing. That's why we built this assistant to help answer questions like: What are the prerequisites for a specific course? Is a certain course mandatory for my Master's program?")
     st.markdown("Whether you're figuring out program requirements, mandatory exams, or course details like ECTS, prerequisites, or timetables—this assistant is here to help. Ask away!")
+
+    # Show database connection status in sidebar
+    if st.session_state.mongo_connected:
+        st.success("✅ MongoDB Connected")
+    else:
+        st.error("❌ MongoDB Connection Failed")
 
     st.markdown("### 🎓 Your Program")
     st.markdown("Select your Master's program")
