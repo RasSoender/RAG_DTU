@@ -87,8 +87,8 @@ MASTERS_PROGRAMS = list(PROGRAM_MAPPING.keys())
 if "router" not in st.session_state:
     vector_db_configs = {
         "programme_db": {
-            "url": "https://fjax7aot34bgxxo433ma.c0.europe-west3.gcp.weaviate.cloud",
-            "api_key": "4JjcaYcEYBUzb46TpPu6f1qR5CjVJXb5wFB7",
+            "url": "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud",
+            "api_key": "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n",
             "collection_name": "Chunk"
         },
         "course_db": {
