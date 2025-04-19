@@ -184,7 +184,12 @@ def create_weaviate_schema():
                 name="average_rating",
                 data_type=DataType.TEXT,
                 description="Average rating of the course"
-            )
+            ),
+            Property(
+                name="url",
+                data_type=DataType.TEXT,
+                description="URL to the course page"
+            ),
         ]
     )
     print("Course collection created successfully")
@@ -225,6 +230,7 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
         workload_burden = str(course_meta.get('workload_burden', ''))
         overworked_students = str(course_meta.get('overworked_students_in_percent', ''))
         average_rating = str(course_meta.get('average_rating', ''))
+        url = course_meta.get('url', '')
 
         proper_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, course_id))
         
@@ -244,7 +250,8 @@ def import_courses_to_weaviate(processed_embeddings, processed_courses):
                 "failed_students_in_percent": failed_students,
                 "workload_burden": workload_burden,
                 "overworked_students_in_percent": overworked_students,
-                "average_rating": average_rating
+                "average_rating": average_rating,
+                "url": url
             },
             uuid=proper_uuid,
             vector= {
@@ -367,6 +374,7 @@ def query_with_gpt4(user_query, courses_info):
         workload_burden = course.get("workload_burden", "N/A"),
         overworked_students = course.get("overworked_students_in_percent", "N/A"),
         average_rating = course.get("average_rating", "N/A"),
+        url = course.get("url", "N/A")
 
         context_lines.append(
             f"Course Code: {course_code}\n"
@@ -383,13 +391,14 @@ def query_with_gpt4(user_query, courses_info):
             f"Workload Burden: {workload_burden}\n"
             f"Overworked Students: {overworked_students}\n"
             f"Average Rating: {average_rating}\n"
+            f"URL: {url}\n"
         )
         
     context_str = "\n\n---\n\n".join(context_lines)
     
     # Build the prompt using detailed sections
     prompt = f"""
-You are a highly knowledgeable and polite academic assistant with expertise in all DTU courses. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU courses. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
+You are a highly knowledgeable and polite academic assistant with expertise in all DTU courses. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU courses. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant. Always include the **URL** related to the course or source of information used in your response, so the user can verify or explore further.
 
 ---
 
@@ -404,7 +413,7 @@ User Query:
 
 ### 2. **Course Information:**
 - This section contains official and detailed data about DTU courses.
-- First, try to match the user query with information in this section, but if the user do not provide any course name or code in the query, try firstly to figure out if it is referring to the past query, that is in the conversation history.
+- First, try to match the user query with information in this section, but if the user does not provide any course name or code in the query, try first to figure out if it is referring to the past query, that is in the conversation history.
 
 Course Information:
 {context_str}
@@ -413,7 +422,7 @@ Course Information:
 
 ### 3. **Conversation History:**
 - This includes recent exchanges between the user and the assistant.
--You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query informations.
+- You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query information.
 - If course information is unclear or missing in the query, use this section to infer context from previous user questions or previously retrieved course data.
 
 Conversation History:
@@ -424,14 +433,19 @@ Conversation History:
 ### ✅ **Your Task:**
 1. **Interpret the User Query:**
    - If the course name or code is clearly mentioned, probably you can find the relevant course details from the Course Information section and answer accordingly.
-   - If not, do not be creative, firstly check the conversation history for figuring out if the present query {user_query} is connected to the last query and so you can find information in the conversation history, otherwise simply ask more information.
+   - If not, do not be creative — first check the conversation history to figure out if the present query {user_query} is connected to the last query and so you can find information in the conversation history; otherwise, simply ask for more information.
 
 2. **Fallback on History:**
-   - If a course information is not found in Course Information, check the Conversation History for a reference to the course or topic, mostly in the previous query.
+   - If course information is not found in Course Information, check the Conversation History for a reference to the course or topic, mostly in the previous query.
 
 3. **Ask for Clarification (if needed):**
    - If the information cannot be determined from either Course Information or Conversation History, reply in a friendly and polite tone:
      > _"I'm currently unable to identify the course. Could you kindly include the course code so I can help more effectively?"_
+
+4. **Include Source URL:**
+   - Always include the relevant **URL** for the course or source used to answer, so the user can refer to the official page.
+   - The URL must be formatted as a markdown link like this: `[Course Page](https://...link...)`
+   - Always place this markdown link **at the end of your response**.
 
 ---
 
@@ -440,6 +454,9 @@ Conversation History:
 - Always respond in **markdown** format.
 - Be **factual**, **concise**, and **professional**.
 - Avoid showing internal logic or thought process — just speak naturally and helpfully.
+- Always **include the URL** relevant to the source used to generate the response.
+- The URL must be shown as a markdown link, like: `[Course Page](https://...link...)`
+- Always place this link **at the end of the response**.
 
 ---
 """
@@ -505,6 +522,7 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             workload_burden = course.get("workload_burden", "N/A")
             overworked_students = course.get("overworked_students_in_percent", "N/A")
             average_rating = course.get("average_rating", "N/A")
+            url = course.get("url", "N/A")
 
             # Format the course information
             retrieved_courses_str += f"Course Code: {course_code}\n"
@@ -520,6 +538,7 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             retrieved_courses_str += f"Workload Burden: {workload_burden}\n"
             retrieved_courses_str += f"Overworked Students: {overworked_students}\n"
             retrieved_courses_str += f"Average Rating: {average_rating}\n"
+            retrieved_courses_str += f"URL: {url}\n"
             retrieved_courses_str += f"Details: {content}\n\n"
             retrieved_courses_str += "---\n\n"
         

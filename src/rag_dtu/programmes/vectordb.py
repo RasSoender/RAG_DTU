@@ -16,8 +16,9 @@ import uuid
 
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-weaviate_api_key = "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n"
-weaviate_url = "g9h6eircsbe9d9doiv1w.c0.europe-west3.gcp.weaviate.cloud"
+# weaviate_api_key = "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n"
+weaviate_api_key = "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm"
+weaviate_url = "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud"
 
 # Create client with the required grpc_port parameter
 weaviate_client = weaviate.connect_to_weaviate_cloud(
@@ -117,6 +118,11 @@ def create_weaviate_schema():
                 name="chunk_content",
                 data_type=DataType.TEXT,
                 description="The content of the chunk"
+            ),
+            Property(
+                name="chunk_url",
+                data_type=DataType.TEXT,
+                description="The URL of the chunk"
             )
         ]
     )
@@ -145,6 +151,8 @@ def import_chunks_to_weaviate(chunk_embeddings, processed_programmes=None):
         metadata = chunk_data.get('metadata', {})
         course_name = metadata.get('course_name', 'Unknown Course')
         chunk_name = metadata.get('chunk_name', 'Unknown Chunk')
+        chunk_url = metadata.get('url', 'Unknown URL')
+        print(f"Chunk name: {chunk_name} - Chunk URL: {chunk_url}")
         
         # Get embeddings
         name_embedding = chunk_data.get('name_embedding', [])
@@ -163,7 +171,8 @@ def import_chunks_to_weaviate(chunk_embeddings, processed_programmes=None):
             properties={
                 "course_name": course_name,
                 "chunk_name": chunk_name,
-                "chunk_content": chunk_content
+                "chunk_content": chunk_content,
+                "chunk_url": chunk_url
             },
             uuid=proper_uuid,
             vector={
@@ -262,7 +271,7 @@ def search_chunks(query, top_k=5, filter_course=None):
             limit=top_k,
             target_vector=TargetVectors.manual_weights(weights),
             return_metadata=MetadataQuery(distance=True),
-            return_properties=["course_name", "chunk_name", "chunk_content"],
+            return_properties=["course_name", "chunk_name", "chunk_content", "chunk_url"],
             filters=filter_obj
         )
         
@@ -279,6 +288,7 @@ def search_chunks(query, top_k=5, filter_course=None):
                     "course_name": obj.properties.get("course_name", "Unknown Course"),
                     "chunk_name": obj.properties.get("chunk_name", "Unknown Chunk"),
                     "chunk_content": obj.properties.get("chunk_content", ""),
+                    "chunk_url": obj.properties.get("chunk_url", ""),
                     "distance": distance
                 })
                 
@@ -305,23 +315,28 @@ def query_with_gpt4(user_query, programmes_info):
         course_name = information.get("course_name", "N/A")
         chunk_name = information.get("chunk_name", "Unnamed Course")
         chunk_content = information.get("chunk_content", "")
+        chunk_url = information.get("chunk_url", "N/A")
 
         context_lines.append(
             f"Master's programme name: {course_name}\n"
             f"Chunk name: {chunk_name}\n"
             f"Chunk content: {chunk_content}\n"
+            f"Chunk URL: {chunk_url}\n"
         )
     context_str = "\n\n---\n\n".join(context_lines)
-    
     # Build the prompt using detailed sections
     prompt = f"""
-You are a highly knowledgeable and polite academic assistant with expertise in all DTUMaster's programme. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU Master's programme. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
+You are a highly knowledgeable and polite academic assistant with expertise in all DTU Master's programmes. Your mission is to provide **accurate**, **detailed**, and **context-aware** answers about DTU Master's programmes. Speak in **first person**, as if you are personally assisting the user. Never show internal reasoning or thoughts in the reply — simply respond naturally as a helpful assistant.
+
+You must always include the **URL of the DTU master's programme page** that was used to generate the answer. The link must be formatted as a markdown link like `[Programme Page](https://...)`, and placed **at the end** of your reply.  
+Do **not include just the link** — you must also write the following phrase before it:  
+> _"The information has been retrieved from the official programme page here: [Programme Page](...)"_
 
 ---
 
 ### 1. **User Query:**
 - This is the most recent request from the user.
-- If the query does **not include a **master's programme name** or something related to the course, it could be a signal that the answer is in the conversation history.
+- If the query does **not include a master's programme name** or something related to the course, it could be a signal that the answer is in the conversation history.
 
 User Query:
 {user_query}
@@ -329,9 +344,9 @@ User Query:
 ---
 
 ### 2. **Master Information:**
-- This section contains official and detailed data retrived about DTU Master's programme.
-- First, try to match the user query with information in this section, but if the user do not provide any programme name or in the query, try firstly to figure out if it is referring to the past query, that is in the conversation history.
-- It is important that there is a lot of text so it is important that you look in all the part of the text, tryin to capture the information
+- This section contains official and detailed data retrieved about DTU Master's programmes.
+- First, try to match the user query with information in this section, but if the user does not provide any programme name in the query, try first to figure out if it is referring to the past query, that is in the conversation history.
+- It is important that there is a lot of text, so please read all parts of the text carefully to capture relevant information.
 
 Course Information:
 {context_str}
@@ -340,7 +355,7 @@ Course Information:
 
 ### 3. **Conversation History:**
 - This includes recent exchanges between the user and the assistant.
--You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query informations.
+- You should understand from the previous query in the following paragraph if the present query {user_query} is referring to the past query information.
 - If master's programme information is unclear or missing in the query, use this section to infer context from previous user questions or previously retrieved master's programme data.
 
 Conversation History:
@@ -350,15 +365,22 @@ Conversation History:
 
 ### ✅ **Your Task:**
 1. **Interpret the User Query:**
-   - If the programme name is clearly mentioned, probably you can find the relevant details from the Master information section and answer accordingly.
-   - If not, do not be creative, firstly check the conversation history for figuring out if the present query {user_query} is connected to the last query and so you can find information in the conversation history, otherwise simply ask more information.
+   - If the programme name is clearly mentioned, you can probably find the relevant details from the Master Information section and answer accordingly.
+   - If not, do not be creative — first check the conversation history to figure out if the present query {user_query} is connected to the last query and if so, find the information in the conversation history. Otherwise, kindly ask the user for more details.
 
 2. **Fallback on History:**
-   - If a course information is not found in Master Information, check the Conversation History for a reference to the master's programme or topic, mostly in the previous query.
+   - If master's programme information is not found in Master Information, check the Conversation History for a reference to the programme or topic, especially in the previous query.
 
 3. **Ask for Clarification (if needed):**
-   - If the information cannot be determined from either Course Information or Conversation History, reply in a friendly and polite tone:
+   - If the information cannot be determined from either Master Information or Conversation History, reply in a friendly and polite tone:
      > _"I'm currently unable to identify the Master's programme. Could you kindly include the programme name so I can help more effectively?"_
+
+4. **Include the Source URL:**
+   - Always include the DTU programme page URL in the markdown response.
+   - Format it as a markdown link: `[Programme Page](https://...)`
+   - Do **not** include just the link. You must introduce it with the exact phrase:  
+     _"The information has been retrieved from the official programme page here: [Programme Page](...)"_
+   - Always place this phrase + link at the **end** of your response.
 
 ---
 
@@ -367,9 +389,13 @@ Conversation History:
 - Always respond in **markdown** format.
 - Be **factual**, **concise**, and **professional**.
 - Avoid showing internal logic or thought process — just speak naturally and helpfully.
+- Always include the phrase:  
+  _"The information has been retrieved from the official programme page here: [Programme Page](...)"_  
+  at the end of your response, as a markdown link.
 
 ---
 """
+
     
     response = client.chat.completions.create(
         model="gpt-4o-mini-2024-07-18",
@@ -507,11 +533,14 @@ def interactive_chat(processed_embedding_path, processed_courses_path):
             course_name = result["course_name"]
             chunk_name = result["chunk_name"]
             chunk_content = result["chunk_content"]
+            chunk_url = result["chunk_url"]
             
             # Add to the retrieved info string for conversation history
             retrieved_info_str += f"Programme: {course_name}\n"
             retrieved_info_str += f"Section: {chunk_name}\n\n"
             retrieved_info_str += f"Chunk content: {chunk_content}\n\n"
+            retrieved_info_str += f"Chunk URL: {chunk_url}\n\n"
+            retrieved_info_str += "---\n\n"
         
         answer, _ = query_with_gpt4(user_query, retrieved_results)
         print("\n 🧠 Assistant 🧠:")
