@@ -351,12 +351,6 @@ def clear_chat():
     # Add the welcome message back after clearing
     st.session_state.messages.append({"role": "assistant", "content": welcome_message})
 
-def exit_chat():
-    st.session_state.messages = []
-    memory_context.clear()
-    memory_query.clear()
-    st.session_state.chat_active = False
-
 def save_rating(message_idx, rating, comment=""):
     # Update the rating in the session state
     st.session_state.messages[message_idx]["rating"] = rating
