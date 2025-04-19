@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
-from text_normalization_programmes import normalize_query
+from rag_dtu.programmes.text_normalization import normalize_query
 from rich.console import Console
 from rich.markdown import Markdown
 from weaviate.classes.init import Auth

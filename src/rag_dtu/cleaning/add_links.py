@@ -38,7 +38,8 @@ def add_course_link():
 
 
 def main():
-    add_course_link()
+    # add_course_link()
+    add_program_link()
 
 
 if __name__ == "__main__":

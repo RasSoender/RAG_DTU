@@ -134,6 +134,7 @@ def normalize_programme_entry(entry):
         "Head of study": "head_of_study",
     }
 
+    original_section_names = ["Official title"]
     # 4. Copy remaining fields (unless skipped)
     for key, value in entry.items():
         if key in FIELDS_TO_SKIP or key in ["Official title"]:
@@ -142,10 +143,11 @@ def normalize_programme_entry(entry):
         if isinstance(value, str):
             value = re.sub(r'\s+', ' ', value).strip()
 
+        original_section_names.append(key)
         normalized[new_names[key]] = value
 
 
-    return normalized
+    return normalized, original_section_names
 
 def normalize_text_fields(entry):
     """Normalize and clean text fields in a programme entry."""
@@ -231,18 +233,10 @@ def preprocess_programme_text(programme_dict,programme_name, do_stemming=False, 
 
 def build_programme_data(programme_dict,name, do_stemming=False, do_lemmatization=False):
     """Build a processed programme data object from raw programme data."""
+
     # Step 1: Normalize structure and texts
-
-    normalized = normalize_programme_entry(programme_dict)
+    normalized, original_section_names = normalize_programme_entry(programme_dict)
     normalized = normalize_text_fields(normalized)
-    new_dict = merge_curriculum_info(normalized)
-
-
-
-
-    # print(f"Normalized programme data: {normalized}")
-    # Step 2: Build text before preprocessing (combine string values)
-    # preprocessed_text = " ".join(str(v) for v in normalized.values() if isinstance(v, str))
 
     # Step 3: Complete preprocessing
     postprocessed_dict, summarized_dict = preprocess_programme_text(normalized,name, do_stemming=do_stemming, do_lemmatization=do_lemmatization)
@@ -251,7 +245,8 @@ def build_programme_data(programme_dict,name, do_stemming=False, do_lemmatizatio
     
     # Step 4: Add metadata
     postprocessed_dict["metadata"] = {
-        "programme_name": programme_name
+        "programme_name": programme_name,
+        "section_names": original_section_names,
     }
 
     return postprocessed_dict, summarized_dict

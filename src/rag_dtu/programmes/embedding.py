@@ -39,6 +39,7 @@ def merge_files(normal, summarized):
                 merged[programme_name][key] = normal.get(programme_name, {}).get(key, "")
             else:
                 merged[programme_name][key] = value
+        merged[programme_name]["metadata"] = normal.get(programme_name, {}).get("metadata", {})
     return merged
 
 def process_programme_chunks(json_file_path, json_summarized_path):
@@ -80,8 +81,12 @@ def process_programme_chunks(json_file_path, json_summarized_path):
     for programme_name, data in merged_programmes.items():
         print(f"Processing programme: {programme_name}")
 
+        metadata = data.get("metadata", {})
+        section_names = metadata.get("section_names", [])
+        url = metadata.get("url", "")
+
         # Process each field in the merged programme data as a separate chunk
-        for field_name, field_content in data.items():
+        for idx, (field_name, field_content) in enumerate(data.items()):
             # Skip if the field is not a non-empty string
             if not isinstance(field_content, str) or field_content.strip() == "":
                 continue
@@ -91,13 +96,18 @@ def process_programme_chunks(json_file_path, json_summarized_path):
             chunk_id = f"chunk_{chunk_counter}"
             chunk_counter += 1
             
+            if url and section_names:
+                chunk_url =  f"{url}#{section_names[idx].replace(' ', '_')}"
+                print(f"Chunk name: {field_name} Chunk URL: {chunk_url}")
+
             # Create entry for this chunk
             chunk_entry = {
                 "name_embedding": get_name_embedding(field_name),
                 "content_embedding": get_embedding(field_content),
                 "metadata": {
                     "course_name": programme_name,
-                    "chunk_name": field_name
+                    "chunk_name": field_name,
+                    "url": chunk_url if url and section_names else "",
                 },
                 # Optionally include the raw content for verification
                 # "raw_content": field_content
