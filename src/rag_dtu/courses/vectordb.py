@@ -1,17 +1,31 @@
-import faiss
-import numpy as np
-import json
+import weaviate
 import os
-import pickle
+import json
 import re
+import pickle
+import numpy as np
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 from text_normalization import normalize_query
 from rich.console import Console
 from rich.markdown import Markdown
+from weaviate.classes.init import Auth
+from weaviate.classes.config import Property, DataType, Configure
+from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
+import uuid
 
 # Set your OpenAI API key
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+weaviate_api_key = "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm"
+weaviate_url = "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud"
+
+
+# Create client with the required grpc_port parameter
+weaviate_client = weaviate.connect_to_weaviate_cloud(
+cluster_url=weaviate_url,  # Replace with your Weaviate Cloud URL
+auth_credentials=Auth.api_key(weaviate_api_key),  # Replace with your Weaviate Cloud key
+headers={'X-OpenAI-Api-key': os.getenv("OPENAI_API_KEY")}  # Replace with your OpenAI API key
+)
 
 # --- Short-Term Memory (Conversation History) ---
 conversation_history = []
@@ -66,73 +80,6 @@ def get_name_embedding(text):
     embedding = name_embedding_model.encode(text)
     return embedding.tolist()
 
-def create_vector_database(processed_courses, 
-                            content_index_path, 
-                            name_index_path, 
-                            metadata_path):
-    """
-    Create FAISS vector indexes for course content and names.
-    """
-    content_embeddings = []
-    name_embeddings = []
-    metadata = {}
-    content_id_to_index = {}
-    content_index_to_id = {}
-    name_id_to_index = {}
-    name_index_to_id = {}
-
-    for course_id, course_data in processed_courses.items():
-        print(f'Processing course {course_id}')
-        
-        # Get course metadata
-        course_meta = course_data.get('metadata', {})
-        
-        # Get content embedding
-        content_text = course_data.get('preprocessed_course', '')
-        content_emb = get_embedding(content_text)
-        content_embeddings.append(content_emb)
-        
-        # Get name embedding
-        course_name = course_meta.get('course_name', '')
-        name_emb = get_name_embedding(course_name)
-        name_embeddings.append(name_emb)
-
-        # Store metadata and index mappings
-        metadata[course_id] = course_meta
-        content_id_to_index[course_id] = len(content_embeddings) - 1
-        content_index_to_id[len(content_embeddings) - 1] = course_id
-        name_id_to_index[course_id] = len(name_embeddings) - 1
-        name_index_to_id[len(name_embeddings) - 1] = course_id
-
-    # Convert to numpy arrays
-    content_embeddings = np.array(content_embeddings).astype('float32')
-    name_embeddings = np.array(name_embeddings).astype('float32')
-
-    # Create FAISS indexes
-    content_index = faiss.IndexFlatL2(content_embeddings.shape[1])
-    name_index = faiss.IndexFlatL2(name_embeddings.shape[1])
-
-    content_index.add(content_embeddings)
-    name_index.add(name_embeddings)
-
-    # Save FAISS indexes
-    faiss.write_index(content_index, content_index_path)
-    faiss.write_index(name_index, name_index_path)
-
-    # Save metadata and mappings
-    with open(metadata_path, "wb") as f:
-        pickle.dump({
-            'metadata': metadata,
-            'content_id_to_index': content_id_to_index,
-            'content_index_to_id': content_index_to_id,
-            'name_id_to_index': name_id_to_index,
-            'name_index_to_id': name_index_to_id
-        }, f)
-
-    print("Vector database created successfully!")
-    print(f"Content embeddings: {content_embeddings.shape}")
-    print(f"Name embeddings: {name_embeddings.shape}")
-
 def extract_filters_from_query(query):
     """
     Extracts a 5-digit course code from the query, if present.
@@ -144,109 +91,254 @@ def extract_filters_from_query(query):
         filters['course_code'] = code
     return filters
 
-# --- Hybrid FAISS Vector Database Class ---
-class HybridFAISSVectorDB:
-    def __init__(self, content_dim, name_dim,
-                 content_index_path,
-                 name_index_path,
-                 metadata_path):
-        self.content_dim = content_dim
-        self.name_dim = name_dim
-        self.content_index_path = content_index_path
-        self.name_index_path = name_index_path
-        self.metadata_path = metadata_path
+# --- Weaviate Schema and Database Setup ---
+def create_weaviate_schema():
+    """
+    Create Weaviate schema for courses if it doesn't exist
+    """
+    # Check if collection exists
+    collections = weaviate_client.collections.list_all()
 
-        self.content_index = None
-        self.name_index = None
+    weaviate_client.collections.delete("Course") 
 
-        # Dictionaries for mapping course IDs to index positions
-        self.content_id_to_index = {}
-        self.content_index_to_id = {}
-        self.name_id_to_index = {}
-        self.name_index_to_id = {}
+    for collection in collections:
+        if collection == "Course":
+            return True
+    
+    # Define the collection
+    course_collection = weaviate_client.collections.create(
+        name="Course",
+        description="A university course with detailed information",
+        vectorizer_config=[
+            Configure.NamedVectors.none(name = "content_embedding"),
+            Configure.NamedVectors.none(name = "name_embedding")
+        ],  # We'll provide our own vectors
+        properties=[
+            Property(
+                name="course_code",
+                data_type=DataType.TEXT,
+                description="The 5-digit course code"
+            ),
+            Property(
+                name="course_name",
+                data_type=DataType.TEXT,
+                description="The full name of the course"
+            ),
+            Property(
+                name="content",
+                data_type=DataType.TEXT,
+                description="Detailed preprocessed course content"
+            ),
+            Property(
+                name="semester",
+                data_type=DataType.TEXT,
+                description="Semester when course is offered"
+            )
+            ,
+            Property(
+                name="schedule",
+                data_type=DataType.TEXT,
+                description="Planned lectures"
+            ),
+            Property(
+                name="ects",
+                data_type=DataType.TEXT,
+                description="Number of ECTS of the course"
+            ),
+            Property(
+                name="exam",
+                data_type=DataType.TEXT,
+                description="Dates of exam of the course"
+            ),
+            Property(
+                name="re_exam",
+                data_type=DataType.TEXT,
+                description="Dates of re-exam of the course"
+            ),
+            Property(
+                name="signups",
+                data_type=DataType.TEXT,
+                description="Number of signups for the course"
+            ),
+            Property(
+                name="average_grade",
+                data_type=DataType.TEXT,
+                description="Average grade of the course"
+            ),
+            Property(
+                name="failed_students_in_percent",
+                data_type=DataType.TEXT,
+                description="Percentage of students who failed the course"
+            ),
+            Property(
+                name="workload_burden",
+                data_type=DataType.TEXT,
+                description="Workload burden of the course"
+            ),
+            Property(
+                name="overworked_students_in_percent",
+                data_type=DataType.TEXT,
+                description="Percentage of overworked students in the course"
+            ),
+            Property(
+                name="average_rating",
+                data_type=DataType.TEXT,
+                description="Average rating of the course"
+            )
+        ]
+    )
+    print("Course collection created successfully")
+    return True
 
-        self.metadata = {}
+def import_courses_to_weaviate(processed_embeddings, processed_courses):
+    """
+    Import processed courses into the Weaviate database using v4 client
+    """
+    # Make sure schema exists
+    create_weaviate_schema()
+    
+    # Get course collection
+    course_collection = weaviate_client.collections.get("Course")
 
-        if os.path.exists(content_index_path) and os.path.exists(name_index_path) and os.path.exists(metadata_path):
-            self._load()
-        else:
-            raise FileNotFoundError("The FAISS indexes or metadata file was not found. Make sure you have created the vector DB first.")
+    # Create list to hold course objects
+    course_objs = []
+    count = 0
+    for course_id, course_data in processed_embeddings.items():
+        count += 1
+        # Get course metadata and content
+        course_meta = course_data.get('metadata', {})
+        content_embedding = course_data.get('content_embedding', [])
+        name_embedding = course_data.get('name_embedding', [])
+        content_text = processed_courses.get(course_id, {}).get('preprocessed_course', '')
+        # Get embeddings
+        course_name = course_meta.get('course_name', '')
+        
+        semester = course_meta.get('semester', '')
+        semester_str = ", ".join(semester) if isinstance(semester, list) else str(semester)
+        exam = course_meta.get('exam', '')
+        re_exam = course_meta.get('re_exam', '')
+        ects = str(course_meta.get('ects', ''))
+        schedule = course_meta.get('schedule', '')
+        signups = str(course_meta.get('signups', ''))
+        average_grade = str(course_meta.get('average_grade', ''))
+        failed_students = str(course_meta.get('failed_students_in_percent', ''))
+        workload_burden = str(course_meta.get('workload_burden', ''))
+        overworked_students = str(course_meta.get('overworked_students_in_percent', ''))
+        average_rating = str(course_meta.get('average_rating', ''))
 
-    def search(self, query, top_k=3, filters=None,
-               weight_content=0.7, weight_name=0.3):
-        """
-        Searches for courses based on the query.
-        - If filters include a course code, perform an exact lookup.
-        - Otherwise, perform a hybrid semantic search using both embeddings.
-        """
-        # First: Exact lookup based on course code
-        if filters and 'course_code' in filters:
-            filtered_ids = []
-            for course_id, meta in self.metadata.items():
-                if str(meta.get('course_code', '')).zfill(5) == filters['course_code']:
-                    filtered_ids.append(course_id)
-            if filtered_ids:
-                results = []
-                for course_id in filtered_ids:
-                    results.append({
-                        "id": course_id,
-                        "distance": 0.0,  # Exact match
-                        "metadata": self.metadata[course_id]
-                    })
-                return results[:top_k]
+        proper_uuid = str(uuid.uuid5(uuid.NAMESPACE_DNS, course_id))
+        
+        # Create data object
+        course_obj = weaviate.classes.data.DataObject(
+            properties={
+                "course_code": str(course_meta.get('course_code', '')),
+                "course_name": course_name,
+                "content": content_text,
+                "semester": semester_str,
+                "exam": exam,
+                "re_exam": re_exam,
+                "schedule": schedule,
+                "ects": ects,
+                "signups": signups,
+                "average_grade": average_grade,
+                "failed_students_in_percent": failed_students,
+                "workload_burden": workload_burden,
+                "overworked_students_in_percent": overworked_students,
+                "average_rating": average_rating
+            },
+            uuid=proper_uuid,
+            vector= {
+                "content_embedding": content_embedding,
+                "name_embedding": name_embedding
+            }  # Make sure this matches your schema's vector name
+        )
+        print(f"Adding course {course_id} to Weaviate")
+        course_objs.append(course_obj)
+    for obj in course_objs:
+        try:
+            course_collection.data.insert(
+                properties=obj.properties,
+                uuid=obj.uuid,
+                vector=obj.vector
+            )
+            print(f"✅ Inserted course {obj.properties.get('course_code')}")
+        except Exception as e:
+            print(f"❌ Error inserting course {obj.properties.get('course_code')}: {e}")
 
-        # Otherwise: Hybrid semantic search
-        query_content_embedding = np.array(get_embedding(query)).astype('float32').reshape(1, -1)
-        query_name_embedding = np.array(get_name_embedding(query)).astype('float32').reshape(1, -1)
 
-        distances_content, indices_content = self.content_index.search(query_content_embedding, top_k)
-        distances_name, indices_name = self.name_index.search(query_name_embedding, top_k)
+    print(f"Imported {len(processed_courses)} courses to Weaviate")
+def check_weaviate_courses():
+    """
+    Check if courses are already in Weaviate using v4 client
+    """
+    try:
+        collections = weaviate_client.collections.list_all()
+        for collection in collections:
+            if collection == "Course":
+                print("Course collection already exists")
+            
+        # Check if collection has data
+        course_collection = weaviate_client.collections.get("Course")
+        response = course_collection.query.fetch_objects(
+            limit=1
+        )
+        
+        if len(response.objects) > 0:
+            return True
+        return False
+    except Exception as e:
+        print(f"Error checking Weaviate courses: {e}")
+        return False
 
-        combined_scores = {}
-        # Process content index results
-        for i in range(len(indices_content[0])):
-            idx = indices_content[0][i]
-            if idx < 0:
-                continue
-            course_id = self.content_index_to_id.get(idx)
-            if course_id is None:
-                continue
-            combined_scores[course_id] = combined_scores.get(course_id, 0) + weight_content * distances_content[0][i]
+# --- Weaviate Query Functions ---
+def search_courses(query, top_k=3, filters=None, weight_content=0.7, weight_name=0.3):
+    """
+    Search for courses using Weaviate with hybrid search (name and content)
+    """
+    course_collection = weaviate_client.collections.get("Course")
 
-        # Process name index results
-        for i in range(len(indices_name[0])):
-            idx = indices_name[0][i]
-            if idx < 0:
-                continue
-            course_id = self.name_index_to_id.get(idx)
-            if course_id is None:
-                continue
-            combined_scores[course_id] = combined_scores.get(course_id, 0) + weight_name * distances_name[0][i]
+    weight_content = weight_content * 100
+    weight_name = weight_name * 100
+    
+    # First: Exact lookup based on course code
+    if filters and 'course_code' in filters:
+        try:
+            response = course_collection.query.fetch_objects(
+                filters=Filter.by_property("course_code").equal(filters['course_code']),
+            )
+            
+            if len(response.objects) > 0:
+                return [obj.properties for obj in response.objects]
+        except Exception as e:
+            print(f"Error during course code search: {e}")
+    
+    # Get embeddings for the query
+    query_embedding_openai = get_embedding(query)
+    name_embedding_trans = get_name_embedding(query)
+    
+    # Perform hybrid search using both vectors with weights
+    try:
+        response = course_collection.query.hybrid(
+            query =query,
+            alpha = 0.75,
+            vector={
+                "content_embedding": query_embedding_openai,
+                "name_embedding": name_embedding_trans
+            },
+            limit=top_k,
+            target_vector=TargetVectors.manual_weights({"content_embedding": weight_content ,
+                                                         "name_embedding" : weight_name}),
+            return_metadata=MetadataQuery(distance=True)
+        )
 
-        # Sort the courses by combined score (lower is better)
-        sorted_results = sorted(combined_scores.items(), key=lambda x: x[1])
+        if len(response.objects) > 0:
+            # Sort by distance
+            return [obj.properties for obj in response.objects]
+    except Exception as e:
+        print(f"Error during hybrid search: {e}")
 
-        final_results = []
-        for course_id, score in sorted_results[:top_k]:
-            final_results.append({
-                "id": course_id,
-                "distance": score,
-                "metadata": self.metadata.get(course_id, {})
-            })
+    return []
 
-        return final_results
-
-    def _load(self):
-        self.content_index = faiss.read_index(self.content_index_path)
-        self.name_index = faiss.read_index(self.name_index_path)
-        with open(self.metadata_path, "rb") as f:
-            data = pickle.load(f)
-            self.metadata = data.get('metadata', {})
-            self.content_id_to_index = data.get('content_id_to_index', {})
-            self.content_index_to_id = data.get('content_index_to_id', {})
-            self.name_id_to_index = data.get('name_id_to_index', {})
-            self.name_index_to_id = data.get('name_index_to_id', {})
-        print("FAISS indexes and metadata loaded.")
 
 # --- GPT-4 Query Function ---
 def query_with_gpt4(user_query, courses_info):
@@ -260,14 +352,39 @@ def query_with_gpt4(user_query, courses_info):
     
     # Build course info context string
     context_lines = []
-    for course_id, info in courses_info.items():
-        metadata = info.get("metadata", {})
-        course_code = metadata.get("course_code", "N/A")
-        course_name = metadata.get("course_name", "Unnamed Course")
-        preprocessed_text = info.get("preprocessed_course", "")
+    for course in courses_info:
+        course_code = course.get("course_code", "N/A")
+        course_name = course.get("course_name", "Unnamed Course")
+        preprocessed_text = course.get("content", "")
+        semester = course.get("semester", "N/A"),
+        ects = course.get("ects", "N/A"),
+        schedule = course.get("schedule", "N/A"),
+        exam = course.get("exam", "N/A"),
+        re_exam = course.get("re_exam", "N/A"),
+        signups = course.get("signups", "N/A"),
+        average_grade = course.get("average_grade", "N/A"),
+        failed_students = course.get("failed_students_in_percent", "N/A"),
+        workload_burden = course.get("workload_burden", "N/A"),
+        overworked_students = course.get("overworked_students_in_percent", "N/A"),
+        average_rating = course.get("average_rating", "N/A"),
+
         context_lines.append(
-            f"Course Code: {course_code}\nTitle: {course_name}\nDetails: {preprocessed_text}"
+            f"Course Code: {course_code}\n"
+            f"Title: {course_name}\n"
+            f"ECTS: {ects}\n"
+            f"Semester: {semester}\n"
+            f"Schedule: {schedule}\n"
+            f"Exam Date: {exam}\n"
+            f"Re-Exam Date: {re_exam}\n"
+            f"Details: {preprocessed_text}\n"
+            f"Signups: {signups}\n"
+            f"Average Grade: {average_grade}\n"
+            f"Failed Students: {failed_students}\n"
+            f"Workload Burden: {workload_burden}\n"
+            f"Overworked Students: {overworked_students}\n"
+            f"Average Rating: {average_rating}\n"
         )
+        
     context_str = "\n\n---\n\n".join(context_lines)
     
     # Build the prompt using detailed sections
@@ -335,14 +452,28 @@ Conversation History:
         ],
         temperature=0.1
     )
-    
     answer = response.choices[0].message.content
     return answer, prompt
 
 
 # --- Interactive Chat Function ---
-def interactive_chat(vector_db, processed_courses):
+def interactive_chat(processed_embedding_path, processed_courses_path):
     print("Starting interactive chat session. Type 'exit' or 'quit' to end.")
+    print("\n 🧠 Assistant 🧠: Hi! I am your assistant for DTU courses information :) How can I help you?")
+    
+    # Load processed courses if needed for additional information
+    with open(processed_courses_path, "r", encoding="utf-8") as f:
+        processed_courses = json.load(f)
+    
+    with open(processed_embedding_path, "r", encoding="utf-8") as f:
+        processed_embeddings = json.load(f)
+    
+    # Check if courses are in Weaviate, import if not
+    if not check_weaviate_courses():
+        print("Importing courses to Weaviate...")
+        import_courses_to_weaviate(processed_embeddings, processed_courses)
+        print("Courses imported successfully.")
+    
     while True:
         user_query = input("\n 👨‍💼 User 👨‍💼: ")
         if user_query.strip().lower() in ["exit", "quit"]:
@@ -353,62 +484,67 @@ def interactive_chat(vector_db, processed_courses):
         normalized_query, _ = normalize_query(user_query)
         filters = extract_filters_from_query(normalized_query)
 
-        # Search the vector database using the user query
-        search_results = vector_db.search(normalized_query, top_k=5, filters=filters)
+        # Search Weaviate using the user query
+        search_results = search_courses(normalized_query, top_k=5, filters=filters)
 
-        # Gather detailed course info from processed_courses using the IDs from search results.
-        retrieved_courses = {}
-        for result in search_results:
-            course_id = result["id"]
-            if course_id in processed_courses:
-                retrieved_courses[course_id] = processed_courses[course_id]
-            else:
-                print(f"Warning: Course ID {course_id} not found in processed_courses.")
 
-        # Build a summary string of retrieved course information for conversation history.
+        # Format retrieved courses for conversation history
         retrieved_courses_str = ""
-        for course_id, info in retrieved_courses.items():
-            metadata = info.get("metadata", {})
-            course_code = metadata.get("course_code", "N/A")
-            course_name = metadata.get("course_name", "Unnamed Course")
-            retrieved_courses_str += f"Course Code: {course_code}\nTitle: {course_name}\n\n"
+        for course in search_results:
+            course_code = course.get("course_code", "N/A")
+            course_name = course.get("course_name", "Unnamed Course")
+            content = course.get("content", "No content available")
+            semester = course.get("semester", "N/A")
+            ects = course.get("ects", "N/A")
+            schedule = course.get("schedule", "N/A")
+            exam = course.get("exam", "N/A")
+            re_exam = course.get("re_exam", "N/A")
+            signups = course.get("signups", "N/A")
+            average_grade = course.get("average_grade", "N/A")
+            failed_students = course.get("failed_students_in_percent", "N/A")
+            workload_burden = course.get("workload_burden", "N/A")
+            overworked_students = course.get("overworked_students_in_percent", "N/A")
+            average_rating = course.get("average_rating", "N/A")
+
+            # Format the course information
+            retrieved_courses_str += f"Course Code: {course_code}\n"
+            retrieved_courses_str += f"Title: {course_name}\n"
+            retrieved_courses_str += f"ECTS: {ects}\n"
+            retrieved_courses_str += f"Semester: {semester}\n"
+            retrieved_courses_str += f"Schedule: {schedule}\n"
+            retrieved_courses_str += f"Exam Date: {exam}\n"
+            retrieved_courses_str += f"Re-Exam Date: {re_exam}\n"
+            retrieved_courses_str += f"Signups: {signups}\n"
+            retrieved_courses_str += f"Average Grade: {average_grade}\n"
+            retrieved_courses_str += f"Failed Students: {failed_students}\n"
+            retrieved_courses_str += f"Workload Burden: {workload_burden}\n"
+            retrieved_courses_str += f"Overworked Students: {overworked_students}\n"
+            retrieved_courses_str += f"Average Rating: {average_rating}\n"
+            retrieved_courses_str += f"Details: {content}\n\n"
+            retrieved_courses_str += "---\n\n"
         
         # Get GPT-4 answer along with the current prompt (for logging purposes)
-        answer, _ = query_with_gpt4(user_query, retrieved_courses)
+        answer, _ = query_with_gpt4(user_query, search_results)
         print("\n 🧠 Assistant 🧠:")
         display_markdown(answer)
         print("\n---\n")
 
         # Update the conversation history with the user query and the retrieved course summary
-        update_conversation_history(user_query, retrieved_courses)
+        update_conversation_history(user_query, retrieved_courses_str)
+
+    weaviate_client.close()
 
 
 # --- Main Flow ---
 if __name__ == "__main__":
-    # Load the processed courses JSON (which contains the preprocessed_course text)
-    with open("data/processed_courses.json", "r", encoding="utf-8") as f:
-        processed_courses = json.load(f)
+    processed_embedding_path = "data/course_embeddings.json"
+    processed_courses_path = "data/processed_courses.json"
 
-    content_index_path = "data/vector_db/faiss_content.index"
-    name_index_path = "data/vector_db/faiss_name.index"
-    metadata_path = "data/vector_db/metadata.pkl"
-
-    # Create the vector database if it does not exist
-    if not os.path.exists(content_index_path) or not os.path.exists(name_index_path) or not os.path.exists(metadata_path):
-        create_vector_database(processed_courses, content_index_path, name_index_path, metadata_path)
-
-    # Initialize the vector database from saved files.
-    vector_db = HybridFAISSVectorDB(
-        content_dim=1536, 
-        name_dim=384, 
-        content_index_path=content_index_path, 
-        name_index_path=name_index_path, 
-        metadata_path=metadata_path
-    )
-
-    # Start the interactive chat session.
-    interactive_chat(vector_db, processed_courses)
-
-
-weaviate_url = "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud"
-weaviate_api_key = "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm"
+    with open(processed_embedding_path, "r", encoding="utf-8") as f:
+        processed_embeddings = json.load(f)
+    
+    print("Loaded processed embeddings.")
+    #print first embedding
+    
+    # Start the interactive chat session
+    interactive_chat(processed_embedding_path, processed_courses_path)
