@@ -105,18 +105,6 @@ def attach_exam_dates(entry, course_code, exam_map, reexam_map):
     entry["Exam"] = exam
     entry["Re_exam"] = reexam
 
-    # # Debug print
-    # if exam == "" or reexam == "":
-    #     course_name = entry["course_name"]
-    #     print(f"Debugging course: {course_code} - {course_name}")
-    #     print(f"Exam: {exam}")
-    #     print(f"Reexam: {reexam}")
-    #     print(f"Schedule: {entry.get('Schedule', '')}")
-    #     type_of_assessment = entry.get("Type of assessment", "")
-    #     print(f"Type of assessment: {type_of_assessment}")
-    #     print(f"Date of examination: {examination}")
-    #     print(f"Schedule keys: {schedule_keys_exam}\n\n")
-
     return entry
 
 
