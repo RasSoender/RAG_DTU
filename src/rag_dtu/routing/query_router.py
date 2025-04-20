@@ -34,9 +34,9 @@ name_embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 # Define database configurations
 vector_db_configs = {
     "programme_db": {
-        "url": "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud",
-        "api_key": "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm",
-        "collection_name": "Chunk"  # Programme collection
+        "url": "g9h6eircsbe9d9doiv1w.c0.europe-west3.gcp.weaviate.cloud",
+        "api_key": "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n",
+        "collection_name": "Chunk"
     },
     "course_db": {
         "url": "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud",
