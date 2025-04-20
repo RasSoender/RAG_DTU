@@ -8,9 +8,18 @@ from nltk.tokenize import word_tokenize
 from openai import OpenAI
 import os
 
-
 # Initialize NLP tools
-stop_words = set(stopwords.words('english'))
+try:
+    stop_words = set(stopwords.words('english'))
+except LookupError:
+    nltk.download('stopwords')
+    stop_words = set(stopwords.words('english'))
+
+try:
+    nltk.data.find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt_tab')
+
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
