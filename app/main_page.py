@@ -4,6 +4,7 @@ import traceback
 import tracemalloc
 import streamlit as st
 from streamlit_star_rating import st_star_rating
+import streamlit.components.v1 as components
 from PIL import Image
 import base64
 import datetime
@@ -565,44 +566,18 @@ with st.sidebar:
     st.button("Clear Chat", on_click=clear_chat, use_container_width=True)
 
 # Disclaimer button and content
-st.markdown("""
-<div class="disclaimer-button" onclick="document.getElementById('disclaimer-content').style.display = document.getElementById('disclaimer-content').style.display === 'none' ? 'block' : 'none';">
-    <div>
-        <span class="disclaimer-icon">ℹ️</span>
-        <span>Tips for Better Responses</span>
-    </div>
-    <span>▼</span>
-</div>
-<div id="disclaimer-content" class="disclaimer-content" style="display: none;">
-    <div class="disclaimer-title">How to Get the Best Results</div>
-    <div class="disclaimer-text">
-        For the most accurate and helpful responses, please follow these guidelines when formulating your questions:
-    </div>
-    <div class="disclaimer-tips">
-        <div class="disclaimer-tip"><strong>Be specific:</strong> Always include the name of the Master's program or course name when asking about something.</div>
-        <div class="disclaimer-tip"><strong>State your intent:</strong> Clearly indicate what you're trying to find out (prerequisites, ECTS, exam format, etc.).</div>
-        <div class="disclaimer-tip"><strong>One question at a time:</strong> Complex questions with multiple parts may lead to incomplete answers.</div>
-        <div class="disclaimer-tip"><strong>Provide context:</strong> Even though the system has memory, restating key information helps avoid hallucinations.</div>
-    </div>
-    <div class="disclaimer-text" style="margin-top: 15px;">
-        <strong>Example of a good query:</strong> "What are the mandatory courses for MSc Computer Science and Engineering in the first semester?"
-    </div>
-</div>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const disclaimerButton = document.querySelector('.disclaimer-button');
-    const disclaimerContent = document.getElementById('disclaimer-content');
+with st.expander("ℹ️ Tips for Better Responses"):
+    st.markdown("### How to Get the Best Results")
+    st.markdown("""
+    For the most accurate and helpful responses, please follow these guidelines when formulating your questions:
     
-    if (disclaimerButton) {
-        disclaimerButton.addEventListener('click', function() {
-            if (disclaimerContent) {
-                disclaimerContent.style.display = disclaimerContent.style.display === 'none' ? 'block' : 'none';
-            }
-        });
-    }
-});
-</script>
-""", unsafe_allow_html=True)
+    - **Be specific:** Always include the name of the Master's program or course code when asking about requirements or details.
+    - **State your intent:** Clearly indicate what you're trying to find out (prerequisites, ECTS, exam format, etc.).
+    - **One question at a time:** Complex questions with multiple parts may lead to incomplete answers.
+    - **Provide context:** Even though the system has memory, restating key information helps avoid hallucinations.
+    
+    **Example of a good query:** "What are the mandatory courses for MSc Computer Science and Engineering in the first semester?"
+    """)
         
 # Display chat messages
 for idx, message in enumerate(st.session_state.messages):
