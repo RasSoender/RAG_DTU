@@ -336,6 +336,74 @@ html[data-theme="dark"] .rating-success {
 div[data-testid="stChatMessageContent"] > div {
     background-color: transparent !important;
 }
+
+/* Styling for disclaimer button and container */
+.disclaimer-button {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+}
+
+.disclaimer-button:hover {
+    background-color: #e8e8e8;
+}
+
+.disclaimer-icon {
+    color: #990000;
+    margin-right: 8px;
+}
+
+.disclaimer-content {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+html[data-theme="dark"] .disclaimer-button {
+    background-color: #2c2c3a;
+    border-color: #444;
+}
+
+html[data-theme="dark"] .disclaimer-content {
+    background-color: #1e1e2e;
+    border-color: #444;
+}
+
+.disclaimer-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #990000;
+}
+
+.disclaimer-text {
+    margin-bottom: 10px;
+}
+
+.disclaimer-tips {
+    margin-top: 10px;
+}
+
+.disclaimer-tip {
+    margin-bottom: 5px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.disclaimer-tip:before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+    color: #990000;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -438,6 +506,10 @@ def deselect_program():
     st.session_state.active_program_internal = None
     st.session_state.selected_program = "Select a program"
 
+# Toggle disclaimer visibility
+def toggle_disclaimer():
+    st.session_state.show_disclaimer = not st.session_state.show_disclaimer
+
 # Initialize the messages list only if it doesn't exist
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -457,6 +529,8 @@ if "pending_ratings" not in st.session_state:
     st.session_state.pending_ratings = {}
 if "rating_success" not in st.session_state:
     st.session_state.rating_success = {}
+if "show_disclaimer" not in st.session_state:
+    st.session_state.show_disclaimer = False
 
 # Test MongoDB connection at startup
 if "mongo_connected" not in st.session_state:
@@ -489,6 +563,46 @@ with st.sidebar:
 
     st.markdown("### 🔄 Chat Controls")
     st.button("Clear Chat", on_click=clear_chat, use_container_width=True)
+
+# Disclaimer button and content
+st.markdown("""
+<div class="disclaimer-button" onclick="document.getElementById('disclaimer-content').style.display = document.getElementById('disclaimer-content').style.display === 'none' ? 'block' : 'none';">
+    <div>
+        <span class="disclaimer-icon">ℹ️</span>
+        <span>Tips for Better Responses</span>
+    </div>
+    <span>▼</span>
+</div>
+<div id="disclaimer-content" class="disclaimer-content" style="display: none;">
+    <div class="disclaimer-title">How to Get the Best Results</div>
+    <div class="disclaimer-text">
+        For the most accurate and helpful responses, please follow these guidelines when formulating your questions:
+    </div>
+    <div class="disclaimer-tips">
+        <div class="disclaimer-tip"><strong>Be specific:</strong> Always include the name of the Master's program or course code when asking about requirements or details.</div>
+        <div class="disclaimer-tip"><strong>State your intent:</strong> Clearly indicate what you're trying to find out (prerequisites, ECTS, exam format, etc.).</div>
+        <div class="disclaimer-tip"><strong>One question at a time:</strong> Complex questions with multiple parts may lead to incomplete answers.</div>
+        <div class="disclaimer-tip"><strong>Provide context:</strong> Even though the system has memory, restating key information helps avoid hallucinations.</div>
+    </div>
+    <div class="disclaimer-text" style="margin-top: 15px;">
+        <strong>Example of a good query:</strong> "What are the mandatory courses for MSc Computer Science and Engineering in the first semester?"
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const disclaimerButton = document.querySelector('.disclaimer-button');
+    const disclaimerContent = document.getElementById('disclaimer-content');
+    
+    if (disclaimerButton) {
+        disclaimerButton.addEventListener('click', function() {
+            if (disclaimerContent) {
+                disclaimerContent.style.display = disclaimerContent.style.display === 'none' ? 'block' : 'none';
+            }
+        });
+    }
+});
+</script>
+""", unsafe_allow_html=True)
         
 # Display chat messages
 for idx, message in enumerate(st.session_state.messages):
