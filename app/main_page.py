@@ -118,7 +118,7 @@ welcome_message = """
 Whether you're starting your Master's or in the middle of your studies, this assistant is here to guide you through:
 
 - 🔹 **Master's program structures** — Learn about your specific program's mandatory courses, elective options, and specialization tracks.  
-- 🔹 **Course information** — Get quick details on ECTS credits, prerequisites, instructors, or semester placement.  
+- 🔹 **Course information** — Get quick details on ECTS credits, prerequisites, instructors, semester placement, average grade and many other information.  
 - 🔹 **Exam requirements** — Know which courses are mandatory for graduation and when the exams typically take place.  
 - 🔹 **Cross-program exploration** — Curious about courses from other DTU programs? I can help you see how they align with your study plan.  
 - 🔹 **Recommendations & eligibility** — Wondering if you meet the prerequisites for a course? Just ask.
@@ -571,12 +571,12 @@ with st.expander("ℹ️ Tips for Better Responses"):
     st.markdown("""
     For the most accurate and helpful responses, please follow these guidelines when formulating your questions:
     
-    - **Be specific:** Always include the name of the Master's program or course code when asking about requirements or details.
+    - **Be specific:** Always include the name of the Master's program or course name when asking about requirements or details.
     - **State your intent:** Clearly indicate what you're trying to find out (prerequisites, ECTS, exam format, etc.).
     - **One question at a time:** Complex questions with multiple parts may lead to incomplete answers.
     - **Provide context:** Even though the system has memory, restating key information helps avoid hallucinations.
     
-    **Example of a good query:** "What are the mandatory courses for MSc Computer Science and Engineering in the first semester?"
+    **Example of a good query:** "What are the mandatory courses for MSc Computer Science and Engineering?"
     """)
         
 # Display chat messages
