@@ -579,7 +579,7 @@ st.markdown("""
         For the most accurate and helpful responses, please follow these guidelines when formulating your questions:
     </div>
     <div class="disclaimer-tips">
-        <div class="disclaimer-tip"><strong>Be specific:</strong> Always include the name of the Master's program or course code when asking about requirements or details.</div>
+        <div class="disclaimer-tip"><strong>Be specific:</strong> Always include the name of the Master's program or course name when asking about something.</div>
         <div class="disclaimer-tip"><strong>State your intent:</strong> Clearly indicate what you're trying to find out (prerequisites, ECTS, exam format, etc.).</div>
         <div class="disclaimer-tip"><strong>One question at a time:</strong> Complex questions with multiple parts may lead to incomplete answers.</div>
         <div class="disclaimer-tip"><strong>Provide context:</strong> Even though the system has memory, restating key information helps avoid hallucinations.</div>
