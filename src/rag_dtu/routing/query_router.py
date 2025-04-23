@@ -498,6 +498,10 @@ Please provide a structured analysis with the following fields:
 1. If in the query there is the word exam, course, probably the user is referring to course_query
 2. If in the query there is the word programme, master etc, probably the user is referring to programme_query
 
+
+###SUGGESTION
+If there is a proper name that could be for a course or a programme, check the available programmes list and see if there is a match. If there is a match, use it in the output and route to the correct query type. If there is no match, it is probably a course query
+
 Format your response as a valid JSON object with these fields.
 """
         try:
