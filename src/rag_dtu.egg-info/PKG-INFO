@@ -1,0 +1,60 @@
+Metadata-Version: 2.4
+Name: rag_dtu
+Version: 0.1.0
+Summary: RAG assistant for DTU course queries
+Author: Lorenzo Cazzador, Manuel Lovo, Rasmus Soendergaard, Manuel Ibanez
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+# 🎓 DTU Chat Assistant — A RAG Chatbot for the Technical University of Denmark
+
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dtu-chatbot.streamlit.app/)
+
+This repository contains the implementation of a Retrieval-Augmented Generation (RAG) chatbot developed as part of the *Advanced Business Analytics* course at the Technical University of Denmark (DTU).
+
+It is designed to support DTU Master's students by making it easier to access and understand key academic information — from course prerequisites to program requirements and exam dates.
+
+## 🤖 About This Chatbot
+
+Navigating a Master’s program can be overwhelming. This assistant makes it easy to access key academic info—like course prerequisites, program requirements—via natural language queries.
+
+Whether you're starting your MSc or planning your electives, the assistant can help with:
+
+- Mandatory and elective course structures  
+- Course details: ECTS, prerequisites, instructors, semesters  
+- Graduation and exam requirements  
+- Cross-program course eligibility  
+- Study plan support and recommendations  
+
+💡 Select your MSc program from the sidebar to get tailored answers.  
+Try asking:
+- *“What are the mandatory courses for MSc Computer Science?”*  
+- *“Can I take 01005 Linear Algebra as an elective?”*  
+- *“How many ECTS do I need to graduate?”*
+
+---
+
+## 📌 Objective
+
+We aim to make DTU's academic information more accessible and user-friendly by combining deep learning with information retrieval. The chatbot answers practical questions that students typically struggle with by leveraging official DTU data.
+
+---
+
+## 🔍 Dataset
+
+The knowledge base is created via web scraping from:
+- [kurser.dtu.dk](https://kurser.dtu.dk/search) – for course details  
+- [sdb.dtu.dk](https://sdb.dtu.dk) – for program structures and exam info
+
+---
+
+## 🧠 Tech Stack
+
+- **Embeddings**:
+  - `text-embedding-3-small` (OpenAI) — used for general text and document chunks  
+  - `paraphrase-MiniLM-L6-v2` (SentenceTransformers) — used for short texts like course names
+- **Vector Store**: Weaviate
+- **Language Model**: OpenAI GPT
+- **Frontend**: Streamlit
+- **Data Collection**: Web scraping via BeautifulSoup, requests
+- **Data Processing**: custom chunking strategies
