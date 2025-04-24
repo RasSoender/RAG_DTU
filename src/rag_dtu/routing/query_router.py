@@ -442,7 +442,7 @@ class QueryRouter:
     is about a programme, it outputs an exact matching programme name.
     """
     QUERY_TYPES = {
-        "COURSE": "banana",
+        "COURSE": "course_query",
         "PROGRAMME": "programme_query",
         "CONVERSATION": "conversation_query",
         "UNKNOWN": "unknown_query"
