@@ -549,11 +549,7 @@ with st.sidebar:
     st.markdown("We know that navigating a study program can be confusing. That's why we built this assistant to help answer questions like: What are the prerequisites for a specific course? Is a certain course mandatory for my Master's program?")
     st.markdown("Whether you're figuring out program requirements, mandatory exams, or course details like ECTS, prerequisites, or timetables—this assistant is here to help. Ask away!")
 
-    # Show database connection status in sidebar
-    if st.session_state.mongo_connected:
-        st.success("✅ MongoDB Connected")
-    else:
-        st.error("❌ MongoDB Connection Failed")
+    # Show database connection status in sideba
 
     st.markdown("### 🎓 Your Program")
     st.markdown("Select your Master's program")
