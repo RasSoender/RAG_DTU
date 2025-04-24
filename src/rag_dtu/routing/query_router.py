@@ -494,13 +494,19 @@ Please provide a structured analysis with the following fields:
 3. course_code: If applicable, a 5-digit course code extracted from the query or, if you find that the course code is in the past queries, take it from the conversation history.
 4. programme_name: If applicable but just only if there is explicitly written in the query, if the query appears to be about a programme, output the exact programme name from the provided list that most closely matches the query; if none match, output an empty string. Moreover, if you find that the newest query can be referred to a programme name of the past queries, give it.
 
-###WARNING
-1. If in the query there is the word exam, course, probably the user is referring to course_query
-2. If in the query there is the word programme, master etc, probably the user is referring to programme_query
-
 
 ###SUGGESTION
-If there is a proper name that could be for a course or a programme, check the available programmes list and see if there is a match. If there is a match, use it in the output and route to the correct query type. If there is no match, it is probably a course query
+1. If in the query there is the word exam or course, probably the user is referring to course_query
+2. If in the query there is the word programme, master etc, probably the user is referring to programme_query
+3. If there is a proper name that could be both for a course or a programme, check the available programmes list and see if there is a match. If there is a match, use it in the output and route to the correct program query. If there is no match, it is probably a course query.
+
+###EXAMPLE
+
+1. If the user asks "What is the exam date for course 02450?", it is a course_query.
+2. If the user asks "What are the requirements for the master's programme in Computer Science?", it is a programme_query.
+3. If the user asks "What is the course content for Environmental Modelling?", it is a course_query.
+4. If the user asks "Information regarding Bayesian Machine Learning", it is a course_query.
+5. If the user asks "And who is the teacher of that course", probably it is a conversation_query since it is referring to a past query.
 
 Format your response as a valid JSON object with these fields.
 """
