@@ -133,6 +133,8 @@ If you're not sure how to start, try asking:
 **Ready when you are — just type your question below and let's get started! 🎓**
 """
 
+st.cache_data.clear()
+
 st.set_page_config(page_title="DTU CHAT", layout="wide", initial_sidebar_state="expanded")
 
 # Custom CSS to improve rating display
