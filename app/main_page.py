@@ -127,8 +127,10 @@ Whether you're starting your Master's or in the middle of your studies, this ass
 
 If you're not sure how to start, try asking:
 - *"What are the mandatory courses for MSc Computer Science?"*  
-- *"Can I take 01005 Linear Algebra as an elective?"*  
-- *"How many ECTS do I need to graduate?"*
+- *"What is the average grade of the course Introduction to Machine Learning and Data Mining?"*  
+- *"What should I do for starting my thesis?"*
+- *"Could you suggest me a course regarding Water Pipelines and LCA assestment?"*
+- *"When is the exam for the course Advanced Data Structures?"*
 
 **Ready when you are — just type your question below and let's get started! 🎓**
 """
