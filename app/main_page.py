@@ -24,7 +24,7 @@ except ImportError:
     print("Error importing modules. Please ensure the 'rag_dtu' package is installed and accessible.")
 
 # MongoDB Connection Setup
-DB_PASSWORD = st.secrets["DB_PASSWORD"]  # Replace this with your actual password
+DB_PASSWORD = st.secrets["DB_PASSWORD"]  
 DB_USERNAME = st.secrets["DB_USERNAME"]
 
 CONNECTION_STRING = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@userfeedback.iurtfej.mongodb.net/?retryWrites=true&w=majority&appName=UserFeedback"
