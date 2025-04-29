@@ -29,7 +29,7 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY)
 console = Console()
 
 # Initialize embedding models
-name_embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+name_embedding_model = SentenceTransformer('data/model_dir')
 
 # Define database configurations
 vector_db_configs = {
