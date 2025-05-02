@@ -34,8 +34,8 @@ name_embedding_model = SentenceTransformer('data/model_dir')
 # Define database configurations
 vector_db_configs = {
     "programme_db": {
-        "url": "g9h6eircsbe9d9doiv1w.c0.europe-west3.gcp.weaviate.cloud",
-        "api_key": "A6IFGm879tMitR94FWoffvNsBDeMTu8eZv8n",
+        "url": "ea8rwncpr1ifoy9tdujewq.c0.europe-west3.gcp.weaviate.cloud",
+        "api_key": "lA6E4zmIkkDXnKZ4wWbpoC9GmOZERDhsytYF",
         "collection_name": "Chunk"
     },
     "course_db": {
