@@ -33,17 +33,17 @@ name_embedding_model = SentenceTransformer('data/model_dir')
 
 # Define database configurations
 vector_db_configs = {
-    "programme_db": {
-        "url": "ea8rwncpr1ifoy9tdujewq.c0.europe-west3.gcp.weaviate.cloud",
-        "api_key": "lA6E4zmIkkDXnKZ4wWbpoC9GmOZERDhsytYF",
+        "programme_db": {
+        "url": "b9lajtrlqmesafaemsewpa.c0.europe-west3.gcp.weaviate.cloud",
+        "api_key": os.getenv("API_KEY_PROGRAMMES"),
         "collection_name": "Chunk"
-    },
-    "course_db": {
-        "url": "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud",
-        "api_key": "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm",  # Replace with your second API key
-        "collection_name": "Course"
+        },
+        "course_db": {
+            "url": "https://8q99kzb3sloyaolqgnntg.c0.europe-west3.gcp.weaviate.cloud",
+            "api_key": os.getenv("API_KEY_COURSES"),
+            "collection_name": "Course"
+        }
     }
-}
 
 def extract_filters_from_query(query):
     """

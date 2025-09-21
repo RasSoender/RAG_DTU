@@ -11,8 +11,11 @@ import datetime
 import uuid
 import pymongo
 from pymongo import MongoClient
+from openai import OpenAI
+
 
 os.environ["STREAMLIT_WATCH_MODE"] = "poll"
+os.environ["STREAMLIT_WATCHER_TYPE"] = "watchdog"
 os.environ["STREAMLIT_DISABLE_WATCHDOG_WARNING"] = "true"
 tracemalloc.start()
 
@@ -20,12 +23,24 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 
 try:
     from rag_dtu.routing.query_router import Memory, QueryMemory, MultiVectorDBClient, QueryRouter
+    import rag_dtu.routing.query_router as query_router
 except ImportError:
     print("Error importing modules. Please ensure the 'rag_dtu' package is installed and accessible.")
 
 # MongoDB Connection Setup
-DB_PASSWORD = st.secrets["DB_PASSWORD"]  
+
 DB_USERNAME = st.secrets["DB_USERNAME"]
+DB_PASSWORD = st.secrets["DB_PASSWORD"]
+
+if "OPENAI_API_KEY" in st.secrets:  # Streamlit Cloud
+    OPENAI_KEY = st.secrets["OPENAI_API_KEY"]
+else:  # Local dev
+    OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+
+if not OPENAI_KEY:
+    raise RuntimeError("❌ No OpenAI API key found in st.secrets or environment!")
+
+query_router.openai_client = OpenAI(api_key=OPENAI_KEY)
 
 CONNECTION_STRING = f"mongodb+srv://{DB_USERNAME}:{DB_PASSWORD}@userfeedback.iurtfej.mongodb.net/?retryWrites=true&w=majority&appName=UserFeedback"
 # Function to get MongoDB connection
@@ -88,13 +103,13 @@ MASTERS_PROGRAMS = list(PROGRAM_MAPPING.keys())
 if "router" not in st.session_state:
     vector_db_configs = {
         "programme_db": {
-        "url": "ea8rwncpr1ifoy9tdujewq.c0.europe-west3.gcp.weaviate.cloud",
-        "api_key": "lA6E4zmIkkDXnKZ4wWbpoC9GmOZERDhsytYF",
+        "url": "b9lajtrlqmesafaemsewpa.c0.europe-west3.gcp.weaviate.cloud",
+        "api_key": st.secrets["API_KEY_PROGRAMMES"],
         "collection_name": "Chunk"
         },
         "course_db": {
-            "url": "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud",
-            "api_key": "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm",
+            "url": "https://8q99kzb3sloyaolqgnntg.c0.europe-west3.gcp.weaviate.cloud",
+            "api_key": st.secrets["API_KEY_COURSES"],
             "collection_name": "Course"
         }
     }

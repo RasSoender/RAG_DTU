@@ -5,7 +5,7 @@ data/vector_db/
 __pycache__/
 *.py[cod]
 
-
+.streamlit/
 *.env
 
 .DS_Store

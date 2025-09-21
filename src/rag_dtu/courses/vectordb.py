@@ -15,9 +15,11 @@ from weaviate.classes.query import TargetVectors, MetadataQuery, Filter
 import uuid
 
 # Set your OpenAI API key
+print("Setting up environment...")
+print(os.getenv("OPENAI_API_KEY"))
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-weaviate_api_key = "YVldI0WBz6MUZVoPZA5wp5t7zalMI12jdkfm"
-weaviate_url = "https://yz34awbrqlko1tvblm77g.c0.europe-west3.gcp.weaviate.cloud"
+weaviate_api_key = os.getenv("API_KEY_COURSES")
+weaviate_url = "https://8q99kzb3sloyaolqgnntg.c0.europe-west3.gcp.weaviate.cloud"
 
 
 # Create client with the required grpc_port parameter
